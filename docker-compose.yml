@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  message-db:
+    image: ethangarofolo/message-db:1.2.6
+    ports:
+      - 5433:5432
+
+volumes:
+  db-data:
+    driver: local

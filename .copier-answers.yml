@@ -1,0 +1,12 @@
+# Changes here will be overwritten by Copier
+_src_path: /Users/subhashb/wspace/proteanhq/protean/src/protean/template
+author_email: subhash.bhushan@gmail.com
+author_name: Subhash Bhushan
+broker: memory
+cache: memory
+database: memory
+domain_name: lending
+package_name: lending
+project_name: library
+short_description: library - A Protean Application
+

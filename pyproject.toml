@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "lending"
+version = "0.1.0"
+description = "library - A Protean Application"
+authors = ["Subhash Bhushan <subhash.bhushan@gmail.com>"]
+readme = "README.md"
+classifiers=[
+    # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+protean = {version = "0.11.0", extras=[] }
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.2.1"
+pytest-bdd = "^7.1.2"
+pytest-factoryboy = "^2.7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
