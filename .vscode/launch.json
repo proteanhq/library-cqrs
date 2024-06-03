@@ -11,7 +11,7 @@
             "module": "pytest",
             "justMyCode": false,
             "args": [
-                "tests/lending/tdd/patron/test_patron_aggregate.py::test_patron_aggregate_properties",
+                "tests/lending/tdd/patron/test_hold_entity.py",
             ]
         },
     ]

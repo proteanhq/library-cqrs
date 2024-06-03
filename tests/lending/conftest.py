@@ -3,6 +3,8 @@ import pytest
 
 from pytest_factoryboy import register
 
+import factories
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -24,8 +26,6 @@ def pytest_sessionstart(session):
     lending.domain_context().push()
     lending.init()
 
-    register_factories()
-
 
 @pytest.fixture(autouse=True)
 def run_around_tests():
@@ -42,12 +42,6 @@ def run_around_tests():
     current_domain.event_store.store._data_reset()
 
 
-def register_factories():
-    """Register factories within a method to avoid premature domain import
-    which can lead to circular-import issues.
-    """
-    import factories
-
-    register(factories.PatronFactory)
-    # register(factories.HoldFactory)
-    # register(factories.CheckoutFactory)
+register(factories.PatronFactory)
+register(factories.HoldFactory)
+register(factories.CheckoutFactory)

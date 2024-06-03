@@ -14,7 +14,8 @@ classifiers=[
 
 [tool.poetry.dependencies]
 python = "^3.11"
-protean = {version = "0.11.0", extras=[] }
+# protean = {version = "0.11.0", extras=[] }
+protean = {path = "../../protean", develop = true}
 
 [tool.poetry.group.test]
 optional = true

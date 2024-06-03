@@ -1,6 +1,6 @@
 debug = true
 testing = true
-secret_key = ${SECRET_KEY|c62a1dff97c2310face9645edc9c814a0e8829202f756de392ce415484bcec4e}
+secret_key = "${SECRET_KEY|c62a1dff97c2310face9645edc9c814a0e8829202f756de392ce415484bcec4e}"
 identity_strategy = "uuid"
 identity_type = "string"
 event_processing = "sync"
@@ -11,11 +11,6 @@ provider = "memory"
 
 [databases.memory]
 provider = "memory"
-
-[databases.sqlite]
-provider = "sqlalchemy"
-database = "sqlite"
-database_uri = "sqlite:///test.db"
 
 [brokers.default]
 provider = "inline"
