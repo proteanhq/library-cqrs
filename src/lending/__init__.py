@@ -9,10 +9,11 @@ from lending.patron import (
 
 from lending.book import (
     Book,
-    BookInstance,
-    BookInstanceStatus,
-    BookInstanceType,
+    BookStatus,
+    BookType,
 )
+
+from lending.holding_service import HoldingService
 
 __all__ = [
     "Patron",
@@ -22,7 +23,7 @@ __all__ = [
     "HoldStatus",
     "Checkout",
     "Book",
-    "BookInstance",
-    "BookInstanceStatus",
-    "BookInstanceType",
+    "BookStatus",
+    "BookType",
+    "HoldingService",
 ]

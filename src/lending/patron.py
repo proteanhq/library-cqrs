@@ -23,7 +23,9 @@ class HoldStatus(Enum):
 
 @lending.aggregate
 class Patron:
-    """This is the Patron Aggregate."""
+    """A user of the public library who can place holds on books, check out books,
+    and interact with their current holds and checkouts via their patron profile.
+    Patrons can be either regular patrons or researcher patrons."""
 
     patron_type = String(max_length=10, default=PatronType.REGULAR.value)
     holds = HasMany("Hold")
@@ -32,9 +34,11 @@ class Patron:
 
 @lending.entity(part_of=Patron)
 class Hold:
-    """This is the Hold Entity."""
+    """A reservation placed by a patron on a book.
+    Holds can be open-ended or closed-ended."""
 
-    book_instance_id = Identifier(required=True)
+    book_id = Identifier(required=True)
+    branch_id = Identifier(required=True)
     hold_type = String(max_length=12, default=HoldType.CLOSED_ENDED.value)
     status = String(max_length=10, default=HoldStatus.ACTIVE.value)
     request_date = DateTime(required=True)
@@ -43,8 +47,10 @@ class Hold:
 
 @lending.entity(part_of=Patron)
 class Checkout:
-    """This is the Checkout Entity."""
+    """The action of a patron borrowing a book from the library
+    for a period of up to 60 days."""
 
-    book_instance_id = Identifier(required=True)
+    book_id = Identifier(required=True)
+    branch_id = Identifier(required=True)
     checkout_date = DateTime(required=True)
     due_date = DateTime(required=True)

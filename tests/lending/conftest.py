@@ -2,6 +2,7 @@ import lending
 import os
 import pytest
 
+from datetime import timedelta
 from faker import Faker
 
 Faker.seed(0)
@@ -67,15 +68,48 @@ def researcher_patron(patron):
 
 
 @pytest.fixture
+def overdue_checkouts_patron(patron):
+    checkout_date1 = fake.date_time_between(start_date="-90d", end_date="-61d")
+    checkout_date2 = fake.date_time_between(start_date="-80d", end_date="-71d")
+    checkout_date3 = fake.date_time_between(start_date="-85d", end_date="-75d")
+    due_date1 = checkout_date1 + timedelta(days=60)
+    due_date2 = checkout_date2 + timedelta(days=60)
+    due_date3 = checkout_date3 + timedelta(days=60)
+    patron.checkouts = [
+        lending.Checkout(
+            branch_id="1",
+            book_id=fake.uuid4(),
+            checkout_date=checkout_date1,
+            due_date=due_date1,
+        ),
+        lending.Checkout(
+            branch_id="1",
+            book_id=fake.uuid4(),
+            checkout_date=checkout_date2,
+            due_date=due_date2,
+        ),
+        lending.Checkout(
+            branch_id="1",
+            book_id=fake.uuid4(),
+            checkout_date=checkout_date3,
+            due_date=due_date3,
+        )
+    ]
+    return patron
+
+
+@pytest.fixture
 def book():
     return lending.Book(
         isbn=fake.isbn13(),
-        title=fake.sentence(nb_words=4),
-        price=fake.pyfloat(left_digits=2, right_digits=2),
-        book_instances=[
-            lending.BookInstance(),
-            lending.BookInstance(
-                book_instance_type=lending.BookInstanceType.RESTRICTED.value
-            ),
-        ],
     )
+
+@pytest.fixture
+def circulating_book(book):
+    book.book_type = lending.BookType.CIRCULATING.value
+    return book
+
+@pytest.fixture
+def restricted_book(book):
+    book.book_type = lending.BookType.RESTRICTED.value
+    return book

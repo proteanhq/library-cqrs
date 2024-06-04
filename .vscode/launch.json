@@ -11,7 +11,7 @@
             "module": "pytest",
             "justMyCode": false,
             "args": [
-                "tests/lending/tdd/patron/test_patron_aggregate.py::test_patron_factory_model_fixture",
+                "tests/lending/bdd/holds/test_holds.py::test_patron_tries_to_place_a_hold_on_a_book_already_on_hold_by_another_patron",
             ]
         },
     ]
