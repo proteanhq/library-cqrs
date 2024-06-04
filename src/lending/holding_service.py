@@ -55,6 +55,16 @@ class HoldingService:
                 {"hold_type": ["Regular patrons cannot place open-ended holds"]}
             )
 
+    @invariant.pre
+    def regular_patron_is_limited_to_five_holds(self):
+        if (
+            self.patron.patron_type == PatronType.REGULAR.value
+            and len(self.patron.holds) >= 5
+        ):
+            raise ValidationError(
+                {"regular_patron_holds": ["Regular patron is limited to 5 holds"]}
+            )
+
     @invariant.post
     def patron_does_not_have_more_than_two_overdue_checkouts_in_branch(self):
         overdue_checkouts_in_branch = [

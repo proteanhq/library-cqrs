@@ -107,6 +107,11 @@ def book():
 
 
 @pytest.fixture
+def five_books():
+    return [lending.Book(isbn=fake.isbn13()) for _ in range(5)]
+
+
+@pytest.fixture
 def circulating_book(book):
     book.book_type = lending.BookType.CIRCULATING.value
     return book
