@@ -18,7 +18,7 @@ from lending.domain import lending
 
 
 @lending.domain_service(part_of=[Patron, Book])
-class HoldingService:
+class place_hold:
     def __init__(self, patron: Patron, book: Book, branch_id: Identifier, hold_type: HoldType):
         self.patron = patron
         self.book = book
@@ -65,8 +65,8 @@ class HoldingService:
                 {"regular_patron_holds": ["Regular patron is limited to 5 holds"]}
             )
 
-    @invariant.post
-    def patron_does_not_have_more_than_two_overdue_checkouts_in_branch(self):
+    @invariant.pre
+    def patron_cannot_not_have_more_than_two_overdue_checkouts_in_branch(self):
         overdue_checkouts_in_branch = [
             checkout
             for checkout in self.patron.checkouts
@@ -82,7 +82,7 @@ class HoldingService:
                 }
             )
 
-    def place_hold(self):
+    def __call__(self):
         hold = Hold(
             book_id=self.book.id,
             branch_id=self.branch_id,

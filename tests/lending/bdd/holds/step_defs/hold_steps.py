@@ -6,7 +6,7 @@ from pytest_bdd import given, when, then
 
 from protean.exceptions import ValidationError
 
-from lending import BookStatus, BookType, HoldingService, HoldType, HoldStatus, DailySheetService
+from lending import BookStatus, BookType, place_hold, HoldType, HoldStatus, DailySheetService
 
 
 @pytest.fixture(autouse=True)
@@ -71,9 +71,9 @@ def more_than_two_overdue_checkouts(overdue_checkouts_patron, book):
 @given('a closed-ended hold is placed')
 def closed_ended_hold_placed():
     from protean.globals import g
-    HoldingService(
+    place_hold(
         g.current_user, g.current_book, "1", HoldType.CLOSED_ENDED
-    ).place_hold()
+    )()
 
 
 @given('the hold has reached its expiry date')
@@ -93,9 +93,9 @@ def patron_with_exactly_five_holds(five_books):
     from protean.globals import g
 
     for i in range(5 - len(g.current_user.holds)):
-        HoldingService(
+        place_hold(
             g.current_user, five_books[i], "1", HoldType.CLOSED_ENDED
-        ).place_hold()
+        )()
     assert len(g.current_user.holds) == 5
 
 
@@ -107,7 +107,7 @@ def patron_with_active_hold(patron, book):
     g.current_user = patron
     g.current_book = book
 
-    HoldingService(g.current_user, book, "1", HoldType.CLOSED_ENDED).place_hold()
+    place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED)()
 
 
 @given('a patron has an expired hold')
@@ -117,7 +117,7 @@ def patron_with_expired_hold(patron, book):
     g.current_user = patron
     g.current_book = book
 
-    HoldingService(g.current_user, book, "1", HoldType.CLOSED_ENDED).place_hold()
+    place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED)()
     g.current_user.holds[0].expiry_date = datetime.now() - timedelta(days=1)
 
 
@@ -128,7 +128,7 @@ def patron_with_checked_out_hold(patron, book):
     g.current_user = patron
     g.current_book = book
 
-    HoldingService(g.current_user, book, "1", HoldType.CLOSED_ENDED).place_hold()
+    place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED)()
     g.current_user.holds[0].status = HoldStatus.CHECKED_OUT.value
 
 
@@ -136,11 +136,11 @@ def patron_with_checked_out_hold(patron, book):
 @when("the patron tries to place a hold on the book")
 @when("the patron tries to place a hold on a book")
 @when("the patron tries to place an additional hold")
-def place_hold():
+def place_hold_on_book():
     from protean.globals import g
 
     try:
-        HoldingService(g.current_user, g.current_book,"1", HoldType.CLOSED_ENDED).place_hold()
+        place_hold(g.current_user, g.current_book,"1", HoldType.CLOSED_ENDED)()
     except ValidationError as exc:
         g.current_exception = exc
 
@@ -151,9 +151,9 @@ def place_open_ended_hold():
     from protean.globals import g
 
     try:
-        HoldingService(
+        place_hold(
             g.current_user, g.current_book, "1", HoldType.OPEN_ENDED
-        ).place_hold()
+        )()
     except ValidationError as exc:
         g.current_exception = exc
 
@@ -163,9 +163,9 @@ def closed_ended_hold():
     from protean.globals import g
 
     try:
-        HoldingService(
+        place_hold(
             g.current_user, g.current_book, "1", HoldType.CLOSED_ENDED
-        ).place_hold()
+        )()
     except ValidationError as exc:
         g.current_exception = exc
 
@@ -180,14 +180,14 @@ def check_expiring_holds():
 def place_more_than_five_holds(five_books):
     from protean.globals import g
     for i in range(5):
-        HoldingService(
+        place_hold(
             g.current_user, five_books[i], "1", HoldType.CLOSED_ENDED
-        ).place_hold()
+        )()
     
     # Place one more hold
-    HoldingService(
-            g.current_user, g.current_book, "1", HoldType.CLOSED_ENDED
-        ).place_hold()
+    place_hold(
+        g.current_user, g.current_book, "1", HoldType.CLOSED_ENDED
+    )()
 
 
 @when('the patron cancels the hold')

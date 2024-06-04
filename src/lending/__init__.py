@@ -13,7 +13,7 @@ from lending.book import (
     BookType,
 )
 
-from lending.holding_service import HoldingService
+from lending.holding_service import place_hold
 from lending.daily_sheet_service import DailySheetService
 
 __all__ = [
@@ -26,6 +26,6 @@ __all__ = [
     "Book",
     "BookStatus",
     "BookType",
-    "HoldingService",
+    "place_hold",
     "DailySheetService",
 ]
