@@ -98,6 +98,40 @@ def patron_with_exactly_five_holds(five_books):
         ).place_hold()
     assert len(g.current_user.holds) == 5
 
+
+
+@given('a patron has an active hold')
+def patron_with_active_hold(patron, book):
+    from protean.globals import g
+
+    g.current_user = patron
+    g.current_book = book
+
+    HoldingService(g.current_user, book, "1", HoldType.CLOSED_ENDED).place_hold()
+
+
+@given('a patron has an expired hold')
+def patron_with_expired_hold(patron, book):
+    from protean.globals import g
+
+    g.current_user = patron
+    g.current_book = book
+
+    HoldingService(g.current_user, book, "1", HoldType.CLOSED_ENDED).place_hold()
+    g.current_user.holds[0].expiry_date = datetime.now() - timedelta(days=1)
+
+
+@given('a patron has a hold that has been checked out')
+def patron_with_checked_out_hold(patron, book):
+    from protean.globals import g
+
+    g.current_user = patron
+    g.current_book = book
+
+    HoldingService(g.current_user, book, "1", HoldType.CLOSED_ENDED).place_hold()
+    g.current_user.holds[0].status = HoldStatus.CHECKED_OUT.value
+
+
 @when("the patron places a hold on the book")
 @when("the patron tries to place a hold on the book")
 @when("the patron tries to place a hold on a book")
@@ -156,6 +190,18 @@ def place_more_than_five_holds(five_books):
         ).place_hold()
 
 
+@when('the patron cancels the hold')
+@when('the patron tries to cancel the hold')
+def cancel_hold():
+    from protean.globals import g
+    patron = g.current_user
+
+    try:
+        patron.cancel(patron.holds[0])
+    except ValidationError as exc:
+        g.current_exception = exc
+
+
 @then("the hold is successfully placed")
 def hold_placed():
     from protean.globals import g
@@ -190,3 +236,18 @@ def check_hold_expired():
     from protean.globals import g
 
     assert g.current_user.holds[0].status == HoldStatus.EXPIRED.value
+
+
+@then('the hold is successfully canceled')
+def check_hold_canceled():
+    from protean.globals import g
+
+    assert g.current_user.holds[0].status == HoldStatus.CANCELLED.value
+
+
+@then('the cancellation is rejected')
+def check_hold_cancellation_rejected():
+    from protean.globals import g
+
+    assert hasattr(g, "current_exception")
+    assert isinstance(g.current_exception, ValidationError)

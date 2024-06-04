@@ -1,5 +1,7 @@
+from datetime import datetime
 from enum import Enum
 
+from protean.exceptions import ValidationError
 from protean.fields import DateTime, HasMany, Identifier, String
 
 from lending.domain import lending
@@ -18,6 +20,7 @@ class HoldType(Enum):
 class HoldStatus(Enum):
     ACTIVE = "ACTIVE"
     EXPIRED = "EXPIRED"
+    CHECKED_OUT = "CHECKED_OUT"
     CANCELLED = "CANCELLED"
 
 
@@ -41,7 +44,7 @@ class Hold:
     book_id = Identifier(required=True)
     branch_id = Identifier(required=True)
     hold_type = String(max_length=12, default=HoldType.CLOSED_ENDED.value)
-    status = String(max_length=10, default=HoldStatus.ACTIVE.value)
+    status = String(max_length=11, default=HoldStatus.ACTIVE.value)
     request_date = DateTime(required=True)
     expiry_date = DateTime(required=True)
 
@@ -81,3 +84,16 @@ class Patron:
                 expiry_date=hold.expiry_date,
             )
         )
+    
+    def cancel(self, hold: Hold):
+        if (
+            hold.status == HoldStatus.EXPIRED.value or
+            hold.expiry_date < datetime.now()
+        ):
+            raise ValidationError({"expired_hold": ["Cannot cancel expired holds"]})
+    
+        if hold.status == HoldStatus.CHECKED_OUT.value:
+            raise ValidationError({"checked_out": ["Cannot cancel a checked out hold"]})
+
+        hold.status = HoldStatus.CANCELLED.value
+        self.add_holds(hold)  # This updates the existing hold
