@@ -21,18 +21,19 @@ class HoldStatus(Enum):
     CANCELLED = "CANCELLED"
 
 
-@lending.aggregate
-class Patron:
-    """A user of the public library who can place holds on books, check out books,
-    and interact with their current holds and checkouts via their patron profile.
-    Patrons can be either regular patrons or researcher patrons."""
+@lending.event(part_of="Patron")
+class HoldExpired:
+    """Event raised when a hold on a book placed by a patron expires."""
+    patron_id = Identifier(required=True)
+    hold_id = Identifier(required=True)
+    branch_id = Identifier(required=True)
+    book_id = Identifier(required=True)
+    hold_type = String(required=True)
+    request_date = DateTime(required=True)
+    expiry_date = DateTime(required=True)
 
-    patron_type = String(max_length=10, default=PatronType.REGULAR.value)
-    holds = HasMany("Hold")
-    checkouts = HasMany("Checkout")
 
-
-@lending.entity(part_of=Patron)
+@lending.entity(part_of="Patron")
 class Hold:
     """A reservation placed by a patron on a book.
     Holds can be open-ended or closed-ended."""
@@ -45,7 +46,7 @@ class Hold:
     expiry_date = DateTime(required=True)
 
 
-@lending.entity(part_of=Patron)
+@lending.entity(part_of="Patron")
 class Checkout:
     """The action of a patron borrowing a book from the library
     for a period of up to 60 days."""
@@ -54,3 +55,29 @@ class Checkout:
     branch_id = Identifier(required=True)
     checkout_date = DateTime(required=True)
     due_date = DateTime(required=True)
+
+
+@lending.aggregate
+class Patron:
+    """A user of the public library who can place holds on books, check out books,
+    and interact with their current holds and checkouts via their patron profile.
+    Patrons can be either regular patrons or researcher patrons."""
+
+    patron_type = String(max_length=10, default=PatronType.REGULAR.value)
+    holds = HasMany("Hold")
+    checkouts = HasMany("Checkout")
+
+    def expire(self, hold: Hold):
+        hold.status = HoldStatus.EXPIRED.value
+        self.add_holds(hold)  # This updates the existing hold
+        self.raise_(
+            HoldExpired(
+                patron_id=self.id,
+                hold_id=hold.id,
+                branch_id=hold.branch_id,
+                book_id=hold.book_id,
+                hold_type=hold.hold_type,
+                request_date=hold.request_date,
+                expiry_date=hold.expiry_date,
+            )
+        )

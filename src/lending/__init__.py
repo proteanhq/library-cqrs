@@ -14,6 +14,7 @@ from lending.book import (
 )
 
 from lending.holding_service import HoldingService
+from lending.daily_sheet_service import DailySheetService
 
 __all__ = [
     "Patron",
@@ -26,4 +27,5 @@ __all__ = [
     "BookStatus",
     "BookType",
     "HoldingService",
+    "DailySheetService",
 ]

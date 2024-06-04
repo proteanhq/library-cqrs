@@ -19,10 +19,11 @@ from lending.domain import lending
 
 @lending.domain_service(part_of=[Patron, Book])
 class HoldingService:
-    def __init__(self, patron: Patron, book: Book, branch_id: Identifier):
+    def __init__(self, patron: Patron, book: Book, branch_id: Identifier, hold_type: HoldType):
         self.patron = patron
         self.book = book
         self.branch_id = branch_id
+        self.hold_type = hold_type
 
     @invariant.pre
     def regular_patron_cannot_place_hold_on_restricted_book(self):
@@ -42,6 +43,17 @@ class HoldingService:
     def book_already_on_hold_cannot_be_placed_on_hold(self):
         if self.book.status == BookStatus.ON_HOLD.value:
             raise ValidationError({"book": ["Book is already on hold"]})
+    
+
+    @invariant.pre
+    def regular_patrons_cannot_place_open_ended_holds(self):
+        if (
+            self.patron.patron_type == PatronType.REGULAR.value
+            and self.hold_type == HoldType.OPEN_ENDED
+        ):
+            raise ValidationError(
+                {"hold_type": ["Regular patrons cannot place open-ended holds"]}
+            )
 
     @invariant.post
     def patron_does_not_have_more_than_two_overdue_checkouts_in_branch(self):
@@ -64,7 +76,7 @@ class HoldingService:
         hold = Hold(
             book_id=self.book.id,
             branch_id=self.branch_id,
-            hold_type=HoldType.CLOSED_ENDED.value,
+            hold_type=self.hold_type.value,
             status=HoldStatus.ACTIVE.value,
             request_date=datetime.now(),
             expiry_date=datetime.now() + timedelta(days=7),
