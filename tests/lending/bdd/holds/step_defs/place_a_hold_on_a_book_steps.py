@@ -1,6 +1,8 @@
 from pytest_bdd import given, when, then, scenario
 from pytest_bdd.parsers import cfparse
 
+from protean.exceptions import ValidationError
+
 from lending.holding_service import HoldingService
 
 
@@ -26,16 +28,20 @@ def regular_patron(regular_patron):
     g.current_user = regular_patron
 
 
-@given('a researcher patron is logged in', target_fixture="researcher_patron")
-def researcher_patron(researcher_patron):
+@given('a researcher patron is logged in', target_fixture="a_researcher_patron")
+def a_researcher_patron(researcher_patron):
     from protean.globals import g
     g.current_user = researcher_patron
 
 
 @when("the patron places a hold on the book")
+@when("the patron tries to place a hold on the book")
 def place_hold():
     from protean.globals import g
-    HoldingService(g.current_user,  g.current_book_instance).place_hold()
+    try:
+        HoldingService(g.current_user,  g.current_book_instance).place_hold()
+    except ValidationError as exc:
+        g.current_exception = exc
 
 
 @then("the hold is successfully placed")
@@ -44,3 +50,10 @@ def hold_placed():
     patron = g.current_user
     assert len(patron.holds) == 1
     assert patron.holds[0].book_instance_id == g.current_book_instance.id
+
+
+@then('the hold placement is rejected')
+def hold_rejected():
+    from protean.globals import g
+    assert isinstance(g.current_exception, ValidationError)
+    assert g.current_exception.messages == {"restricted": ["Regular patron cannot place a hold on a restricted book"]}

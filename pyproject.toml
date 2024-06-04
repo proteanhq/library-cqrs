@@ -23,8 +23,7 @@ optional = true
 [tool.poetry.group.test.dependencies]
 pytest = "^8.2.1"
 pytest-bdd = "^7.1.2"
-pytest-factoryboy = "^2.7.0"
-
+faker = "^25.4.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.7"

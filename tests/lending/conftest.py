@@ -1,9 +1,11 @@
+import lending
 import os
 import pytest
 
-from pytest_factoryboy import register
+from faker import Faker
 
-import factories
+Faker.seed(0)
+fake = Faker()
 
 
 def pytest_addoption(parser):
@@ -42,12 +44,38 @@ def run_around_tests():
     # Drain event stores
     current_domain.event_store.store._data_reset()
 
+############
+# FIXTURES #
+############
 
-register(factories.PatronFactory)
-register(factories.PatronFactory, "regular_patron")
-register(factories.PatronFactory, "researcher_patron", patron_type="RESEARCHER")
-register(factories.ActivePatronFactory, "active_patron")
-register(factories.HoldFactory)
-register(factories.CheckoutFactory)
-register(factories.BookFactory)
-register(factories.BookInstanceFactory)
+
+@pytest.fixture
+def patron():
+    return lending.Patron()
+
+
+@pytest.fixture
+def regular_patron(patron):
+    patron.patron_type = lending.PatronType.REGULAR.value
+    return patron
+
+
+@pytest.fixture
+def researcher_patron(patron):
+    patron.patron_type = lending.PatronType.RESEARCHER.value
+    return patron
+
+
+@pytest.fixture
+def book():
+    return lending.Book(
+        isbn=fake.isbn13(),
+        title=fake.sentence(nb_words=4),
+        price=fake.pyfloat(left_digits=2, right_digits=2),
+        book_instances=[
+            lending.BookInstance(),
+            lending.BookInstance(
+                book_instance_type=lending.BookInstanceType.RESTRICTED.value
+            ),
+        ],
+    )

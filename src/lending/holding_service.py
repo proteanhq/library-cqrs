@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 
-from lending import Hold, HoldStatus, HoldType, Patron, Book, BookInstance
+from protean import invariant
+from protean.exceptions import ValidationError
+
+from lending import Hold, HoldStatus, HoldType, Patron, PatronType, Book, BookInstance, BookInstanceType
 from lending.domain import lending
 
 
@@ -10,6 +13,14 @@ class HoldingService:
     def __init__(self, patron: Patron, book_instance: BookInstance):
         self.patron = patron
         self.book_instance = book_instance
+
+    @invariant.pre
+    def regular_patron_cannot_place_hold_on_restricted_book(self):
+        if (
+            self.book_instance.book_instance_type == BookInstanceType.RESTRICTED.value and
+            self.patron.patron_type == PatronType.REGULAR.value
+        ):
+            raise ValidationError({"restricted": ["Regular patron cannot place a hold on a restricted book"]})
 
     def place_hold(self):
         hold = Hold(

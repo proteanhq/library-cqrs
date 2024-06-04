@@ -14,7 +14,3 @@ def test_hold_entity_declared_fields():
         field_name in declared_fields(Hold)
         for field_name in ["id", "book_instance_id", "hold_type"]
     )
-
-
-def test_hold_factory_model_fixture(hold):
-    assert hold is not None
