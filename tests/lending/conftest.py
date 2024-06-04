@@ -45,6 +45,7 @@ def run_around_tests():
     # Drain event stores
     current_domain.event_store.store._data_reset()
 
+
 ############
 # FIXTURES #
 ############
@@ -93,7 +94,7 @@ def overdue_checkouts_patron(patron):
             book_id=fake.uuid4(),
             checkout_date=checkout_date3,
             due_date=due_date3,
-        )
+        ),
     ]
     return patron
 
@@ -104,10 +105,12 @@ def book():
         isbn=fake.isbn13(),
     )
 
+
 @pytest.fixture
 def circulating_book(book):
     book.book_type = lending.BookType.CIRCULATING.value
     return book
+
 
 @pytest.fixture
 def restricted_book(book):

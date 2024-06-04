@@ -4,7 +4,16 @@ from protean import invariant
 from protean.fields import Identifier
 from protean.exceptions import ValidationError
 
-from lending import Hold, HoldStatus, HoldType, Patron, PatronType, Book, BookType, BookStatus
+from lending import (
+    Hold,
+    HoldStatus,
+    HoldType,
+    Patron,
+    PatronType,
+    Book,
+    BookType,
+    BookStatus,
+)
 from lending.domain import lending
 
 
@@ -18,10 +27,16 @@ class HoldingService:
     @invariant.pre
     def regular_patron_cannot_place_hold_on_restricted_book(self):
         if (
-            self.book.book_type == BookType.RESTRICTED.value and
-            self.patron.patron_type == PatronType.REGULAR.value
+            self.book.book_type == BookType.RESTRICTED.value
+            and self.patron.patron_type == PatronType.REGULAR.value
         ):
-            raise ValidationError({"restricted": ["Regular patron cannot place a hold on a restricted book"]})
+            raise ValidationError(
+                {
+                    "restricted": [
+                        "Regular patron cannot place a hold on a restricted book"
+                    ]
+                }
+            )
 
     @invariant.pre
     def book_already_on_hold_cannot_be_placed_on_hold(self):
@@ -33,15 +48,17 @@ class HoldingService:
         overdue_checkouts_in_branch = [
             checkout
             for checkout in self.patron.checkouts
-            if checkout.due_date < datetime.now() and
-            checkout.branch_id == self.branch_id
+            if checkout.due_date < datetime.now()
+            and checkout.branch_id == self.branch_id
         ]
         if len(overdue_checkouts_in_branch) > 2:
-            raise ValidationError({
-                "overdue_checkouts_in_branch": [
-                    "Patron has more than two overdue checkouts in the branch"
-                ]
-            })
+            raise ValidationError(
+                {
+                    "overdue_checkouts_in_branch": [
+                        "Patron has more than two overdue checkouts in the branch"
+                    ]
+                }
+            )
 
     def place_hold(self):
         hold = Hold(
