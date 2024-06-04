@@ -23,6 +23,7 @@ def pytest_sessionstart(session):
     os.environ["PROTEAN_ENV"] = session.config.option.env
 
     from lending.domain import lending
+
     lending.domain_context().push()
     lending.init()
 
@@ -43,5 +44,10 @@ def run_around_tests():
 
 
 register(factories.PatronFactory)
+register(factories.PatronFactory, "regular_patron")
+register(factories.ActivePatronFactory, "active_patron")
 register(factories.HoldFactory)
 register(factories.CheckoutFactory)
+register(factories.BookFactory)
+register(factories.BookFactory, "circulating_book")
+register(factories.BookInstanceFactory)

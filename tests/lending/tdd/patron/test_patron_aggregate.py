@@ -7,8 +7,6 @@ Patron Aggregate Structure:
 - Checkouts - HasMany
 """
 
-import pytest
-
 from protean.reflection import declared_fields
 from protean.utils import DomainObjects
 
@@ -20,8 +18,13 @@ def test_patron_aggregate_element_type():
 
 
 def test_patron_aggregate_has_defined_fields():
-    assert all(field_name in declared_fields(Patron) for field_name in ['id', 'patron_type', 'holds', 'checkouts'])
+    assert all(
+        field_name in declared_fields(Patron)
+        for field_name in ["id", "patron_type", "holds", "checkouts"]
+    )
 
 
-def test_patron_factory_model_fixture(patron):
-    assert patron is not None
+def test_patron_factory_model_fixture(active_patron):
+    assert active_patron is not None
+    assert len(active_patron.holds) == 2
+    assert len(active_patron.checkouts) == 2

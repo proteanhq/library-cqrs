@@ -10,10 +10,10 @@ def test_checkout_entity_element_type():
 
 def test_checkout_entity_declared_fields():
     assert all(
-        field_name in declared_fields(Checkout) for field_name in [
-            'id', 'book_instance_id', 'checkout_date', 'due_date'
-        ]
+        field_name in declared_fields(Checkout)
+        for field_name in ["id", "book_instance_id", "checkout_date", "due_date"]
     )
+
 
 def test_checkout_factory_model_fixture(checkout):
     assert checkout is not None
