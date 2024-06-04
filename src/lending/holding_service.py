@@ -7,9 +7,8 @@ from lending.domain import lending
 
 @lending.domain_service(part_of=[Patron, Book])
 class HoldingService:
-    def __init__(self, patron: Patron, book: Book, book_instance: BookInstance):
+    def __init__(self, patron: Patron, book_instance: BookInstance):
         self.patron = patron
-        self.book = book
         self.book_instance = book_instance
 
     def place_hold(self):

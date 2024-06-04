@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 
 from lending import (
     Patron,
-    PatronType,
     Hold,
     HoldType,
     HoldStatus,
@@ -100,13 +99,16 @@ class BookFactory(factory.Factory):
     isbn = factory.Faker("isbn13")
     title = factory.Faker("sentence")
     price = factory.Faker("pyfloat", left_digits=2, right_digits=2)
-    book_instances = factory.List(
-        [
-            factory.SubFactory(
-                BookInstanceFactory,
-                book_id=factory.SelfAttribute("..book_id"),
-            )
-            for _ in range(2)
-        ],
-        list_factory=NamedBookInstances,
-    )
+
+    @factory.post_generation
+    def book_instances(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.book_instances = extracted
+        else:
+            self.book_instances = [
+                BookInstanceFactory(book=self),
+                BookInstanceFactory(book=self, book_instance_type=BookInstanceType.RESTRICTED.value),
+            ]

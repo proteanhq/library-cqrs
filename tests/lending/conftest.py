@@ -45,9 +45,9 @@ def run_around_tests():
 
 register(factories.PatronFactory)
 register(factories.PatronFactory, "regular_patron")
+register(factories.PatronFactory, "researcher_patron", patron_type="RESEARCHER")
 register(factories.ActivePatronFactory, "active_patron")
 register(factories.HoldFactory)
 register(factories.CheckoutFactory)
 register(factories.BookFactory)
-register(factories.BookFactory, "circulating_book")
 register(factories.BookInstanceFactory)

@@ -21,7 +21,7 @@ class BookInstanceStatus(Enum):
 
 class BookInstanceType(Enum):
     CIRCULATING = "CIRCULATING"
-    RESERVED = "RESERVED"
+    RESTRICTED = "RESTRICTED"
 
 
 @lending.entity(part_of=Book)
