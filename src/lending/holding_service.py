@@ -19,7 +19,9 @@ from lending.domain import lending
 
 @lending.domain_service(part_of=[Patron, Book])
 class place_hold:
-    def __init__(self, patron: Patron, book: Book, branch_id: Identifier, hold_type: HoldType):
+    def __init__(
+        self, patron: Patron, book: Book, branch_id: Identifier, hold_type: HoldType
+    ):
         self.patron = patron
         self.book = book
         self.branch_id = branch_id
@@ -43,7 +45,6 @@ class place_hold:
     def book_already_on_hold_cannot_be_placed_on_hold(self):
         if self.book.status == BookStatus.ON_HOLD.value:
             raise ValidationError({"book": ["Book is already on hold"]})
-    
 
     @invariant.pre
     def regular_patrons_cannot_place_open_ended_holds(self):

@@ -27,6 +27,7 @@ class HoldStatus(Enum):
 @lending.event(part_of="Patron")
 class HoldExpired:
     """Event raised when a hold on a book placed by a patron expires."""
+
     patron_id = Identifier(required=True)
     hold_id = Identifier(required=True)
     branch_id = Identifier(required=True)
@@ -49,6 +50,12 @@ class Hold:
     expiry_date = DateTime(required=True)
 
 
+class CheckoutStatus(Enum):
+    ACTIVE = "ACTIVE"
+    RETURNED = "RETURNED"
+    OVERDUE = "OVERDUE"
+
+
 @lending.entity(part_of="Patron")
 class Checkout:
     """The action of a patron borrowing a book from the library
@@ -57,7 +64,9 @@ class Checkout:
     book_id = Identifier(required=True)
     branch_id = Identifier(required=True)
     checkout_date = DateTime(required=True)
+    status = String(max_length=11, default=CheckoutStatus.ACTIVE.value)
     due_date = DateTime(required=True)
+    return_date = DateTime()
 
 
 @lending.aggregate
@@ -84,14 +93,11 @@ class Patron:
                 expiry_date=hold.expiry_date,
             )
         )
-    
+
     def cancel(self, hold: Hold):
-        if (
-            hold.status == HoldStatus.EXPIRED.value or
-            hold.expiry_date < datetime.now()
-        ):
+        if hold.status == HoldStatus.EXPIRED.value or hold.expiry_date < datetime.now():
             raise ValidationError({"expired_hold": ["Cannot cancel expired holds"]})
-    
+
         if hold.status == HoldStatus.CHECKED_OUT.value:
             raise ValidationError({"checked_out": ["Cannot cancel a checked out hold"]})
 
