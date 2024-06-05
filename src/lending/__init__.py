@@ -17,7 +17,6 @@ from lending.book import (
 from lending.holding_service import place_hold
 from lending.daily_sheet_service import DailySheetService
 from lending.checkout_service import checkout
-from lending.return_service import return_book
 
 __all__ = [
     "Patron",
@@ -33,5 +32,4 @@ __all__ = [
     "place_hold",
     "DailySheetService",
     "checkout",
-    "return_book",
 ]

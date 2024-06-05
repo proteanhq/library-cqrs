@@ -19,4 +19,4 @@ class DailySheetService:
                     hold.status == HoldStatus.ACTIVE.value
                     and hold.expiry_date < datetime.now()
                 ):
-                    patron.expire(hold)
+                    patron.expire_hold(hold.id)

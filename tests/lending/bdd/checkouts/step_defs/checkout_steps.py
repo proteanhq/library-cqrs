@@ -11,7 +11,6 @@ from lending import (
     HoldType,
     checkout,
     BookType,
-    return_book,
     CheckoutStatus,
 )
 
@@ -94,7 +93,7 @@ def patron_return_book():
     from protean.globals import g
 
     try:
-        return_book(g.current_user, g.current_book)()
+        g.current_user.return_book(g.current_book.id)
     except ValidationError as exc:
         g.current_exception = exc
 

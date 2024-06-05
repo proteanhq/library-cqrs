@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from protean.exceptions import ValidationError
+from protean.exceptions import ObjectNotFoundError, ValidationError
 from protean.fields import DateTime, HasMany, Identifier, String
 
 from lending.domain import lending
@@ -49,6 +49,18 @@ class Hold:
     request_date = DateTime(required=True)
     expiry_date = DateTime(required=True)
 
+    def expire(self):
+        self.status = HoldStatus.EXPIRED.value
+
+    def cancel(self):
+        if self.status == HoldStatus.EXPIRED.value or self.expiry_date < datetime.now():
+            raise ValidationError({"expired_hold": ["Cannot cancel expired holds"]})
+
+        if self.status == HoldStatus.CHECKED_OUT.value:
+            raise ValidationError({"checked_out": ["Cannot cancel a checked out hold"]})
+
+        self.status = HoldStatus.CANCELLED.value
+
 
 class CheckoutStatus(Enum):
     ACTIVE = "ACTIVE"
@@ -68,6 +80,10 @@ class Checkout:
     due_date = DateTime(required=True)
     return_date = DateTime()
 
+    def return_(self):
+        self.status = CheckoutStatus.RETURNED.value
+        self.return_date = datetime.now()
+
 
 @lending.aggregate
 class Patron:
@@ -79,9 +95,14 @@ class Patron:
     holds = HasMany("Hold")
     checkouts = HasMany("Checkout")
 
-    def expire(self, hold: Hold):
-        hold.status = HoldStatus.EXPIRED.value
-        self.add_holds(hold)  # This updates the existing hold
+    def expire_hold(self, hold_id: Identifier):
+        try:
+            hold = self.get_one_from_holds(id=hold_id)
+        except ObjectNotFoundError:
+            raise ValidationError({"hold": ["Hold does not exist"]})
+
+        hold.expire()
+
         self.raise_(
             HoldExpired(
                 patron_id=self.id,
@@ -94,12 +115,18 @@ class Patron:
             )
         )
 
-    def cancel(self, hold: Hold):
-        if hold.status == HoldStatus.EXPIRED.value or hold.expiry_date < datetime.now():
-            raise ValidationError({"expired_hold": ["Cannot cancel expired holds"]})
+    def cancel_hold(self, hold_id: Identifier):
+        try:
+            hold = self.get_one_from_holds(id=hold_id)
+        except ObjectNotFoundError:
+            raise ValidationError({"hold": ["Hold does not exist"]})
 
-        if hold.status == HoldStatus.CHECKED_OUT.value:
-            raise ValidationError({"checked_out": ["Cannot cancel a checked out hold"]})
+        hold.cancel()
 
-        hold.status = HoldStatus.CANCELLED.value
-        self.add_holds(hold)  # This updates the existing hold
+    def return_book(self, book_id: Identifier):
+        try:
+            checkout = self.get_one_from_checkouts(book_id=book_id)
+        except ObjectNotFoundError:
+            raise ValidationError({"checkout": ["Checkout does not exist"]})
+
+        checkout.return_()

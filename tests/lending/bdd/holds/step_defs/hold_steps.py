@@ -198,7 +198,7 @@ def cancel_hold():
     patron = g.current_user
 
     try:
-        patron.cancel(patron.holds[0])
+        patron.cancel_hold(patron.holds[0].id)
     except ValidationError as exc:
         g.current_exception = exc
 
