@@ -1,10 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 
 from protean.exceptions import ObjectNotFoundError, ValidationError
 from protean.fields import DateTime, HasMany, Identifier, String
 
 from lending.domain import lending
+
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 
 class PatronType(Enum):
@@ -75,14 +79,17 @@ class Checkout:
 
     book_id = Identifier(required=True)
     branch_id = Identifier(required=True)
-    checkout_date = DateTime(required=True)
+    checkout_date = DateTime(required=True, default=utc_now)
     status = String(max_length=11, default=CheckoutStatus.ACTIVE.value)
-    due_date = DateTime(required=True)
+    due_date = DateTime(required=True, default=lambda: utc_now() + timedelta(days=7))
     return_date = DateTime()
 
     def return_(self):
         self.status = CheckoutStatus.RETURNED.value
         self.return_date = datetime.now()
+
+    def overdue(self):
+        self.status = CheckoutStatus.OVERDUE.value
 
 
 @lending.aggregate

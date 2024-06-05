@@ -73,27 +73,24 @@ def overdue_checkouts_patron(patron):
     checkout_date1 = fake.date_time_between(start_date="-90d", end_date="-61d")
     checkout_date2 = fake.date_time_between(start_date="-80d", end_date="-71d")
     checkout_date3 = fake.date_time_between(start_date="-85d", end_date="-75d")
-    due_date1 = checkout_date1 + timedelta(days=60)
-    due_date2 = checkout_date2 + timedelta(days=60)
-    due_date3 = checkout_date3 + timedelta(days=60)
     patron.checkouts = [
         lending.Checkout(
             branch_id="1",
             book_id=fake.uuid4(),
             checkout_date=checkout_date1,
-            due_date=due_date1,
+            due_date=checkout_date1 + timedelta(days=60),
         ),
         lending.Checkout(
             branch_id="1",
             book_id=fake.uuid4(),
             checkout_date=checkout_date2,
-            due_date=due_date2,
+            due_date=checkout_date2 + timedelta(days=60),
         ),
         lending.Checkout(
             branch_id="1",
             book_id=fake.uuid4(),
             checkout_date=checkout_date3,
-            due_date=due_date3,
+            due_date=checkout_date3 + timedelta(days=60),
         ),
     ]
     return patron

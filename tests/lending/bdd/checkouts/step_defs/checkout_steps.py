@@ -1,10 +1,12 @@
 import pytest
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from pytest_bdd import given, when, then
 
 from protean.exceptions import ValidationError
+
+from lending import Book, Patron, Checkout
 
 from lending import (
     place_hold,
@@ -12,6 +14,7 @@ from lending import (
     checkout,
     BookType,
     CheckoutStatus,
+    DailySheetService,
 )
 
 
@@ -77,6 +80,44 @@ def mark_checkout_overdue():
     patron.checkouts[0].status = CheckoutStatus.OVERDUE.value
 
 
+@given("the system has overdue checkouts")
+def system_has_overdue_checkouts():
+    from protean.globals import g
+
+    patron1 = Patron()
+    patron2 = Patron()
+
+    book1 = Book(isbn="1234567890123")
+    book2 = Book(isbn="1234567890124")
+    book3 = Book(isbn="1234567890125")
+
+    patron1.add_checkouts(
+        [
+            Checkout(
+                book_id=book1.id,
+                branch_id="1",
+            ),
+            Checkout(
+                book_id=book2.id,
+                branch_id="1",
+            ),
+        ]
+    )
+    # Manually expire a checkout
+    patron1.checkouts[0].due_date = datetime.now(timezone.utc) - timedelta(days=1)
+
+    patron2.add_checkouts(
+        Checkout(
+            book_id=book3.id,
+            branch_id="1",
+        )
+    )
+    # Manually exipre a checkout
+    patron2.checkouts[0].due_date = datetime.now(timezone.utc) - timedelta(days=1)
+
+    g.current_patrons = [patron1, patron2]
+
+
 @when("the patron checks out the book")
 @when("the patron tries to check out the book")
 def checkout_book():
@@ -96,6 +137,13 @@ def patron_return_book():
         g.current_user.return_book(g.current_book.id)
     except ValidationError as exc:
         g.current_exception = exc
+
+
+@when("the system processes the overdue checkouts")
+def process_overdue_checkouts():
+    from protean.globals import g
+
+    DailySheetService(patrons=g.current_patrons).run()
 
 
 @then("the checkout is successfully completed")
@@ -125,4 +173,13 @@ def confirm_returned_status():
 def confirm_successful_return():
     from protean.globals import g
 
+    assert hasattr(g, "current_exception") is False
+
+
+@then("the checkout statuses are updated to overdue")
+def confirm_overdue_marking():
+    from protean.globals import g
+
+    assert g.current_patrons[0].checkouts[0].status == "OVERDUE"
+    assert g.current_patrons[1].checkouts[0].status == "OVERDUE"
     assert hasattr(g, "current_exception") is False
