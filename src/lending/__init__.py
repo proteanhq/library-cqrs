@@ -6,6 +6,7 @@ from lending.patron import (
     HoldStatus,
     Checkout,
     CheckoutStatus,
+    HoldPlaced
 )
 
 from lending.book import (
@@ -24,6 +25,7 @@ __all__ = [
     "Hold",
     "HoldType",
     "HoldStatus",
+    "HoldPlaced",
     "Checkout",
     "CheckoutStatus",
     "Book",

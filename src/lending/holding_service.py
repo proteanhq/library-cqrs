@@ -8,6 +8,7 @@ from lending import (
     Hold,
     HoldStatus,
     HoldType,
+    HoldPlaced,
     Patron,
     PatronType,
     Book,
@@ -93,3 +94,16 @@ class place_hold:
             expiry_date=datetime.now() + timedelta(days=7),
         )
         self.patron.add_holds(hold)
+
+        self.patron.raise_(
+            HoldPlaced(
+                patron_id=self.patron.id,
+                patron_type=self.patron.patron_type,
+                hold_id=hold.id,
+                book_id=hold.book_id,
+                branch_id=hold.branch_id,
+                hold_type=hold.hold_type,
+                request_date=hold.request_date,
+                expiry_date=hold.expiry_date
+            )
+        )

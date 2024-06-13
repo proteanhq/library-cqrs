@@ -30,12 +30,26 @@ class HoldStatus(Enum):
 
 @lending.event(part_of="Patron")
 class HoldExpired:
-    """Event raised when a hold on a book placed by a patron expires."""
+    """Event raised when a hold on a book placed by a patron expires"""
 
     patron_id = Identifier(required=True)
     hold_id = Identifier(required=True)
     branch_id = Identifier(required=True)
     book_id = Identifier(required=True)
+    hold_type = String(required=True)
+    request_date = DateTime(required=True)
+    expiry_date = DateTime(required=True)
+
+
+@lending.event(part_of="Patron")
+class HoldPlaced:
+    """Event raised when a book is placed on hold"""
+
+    patron_id = Identifier(required=True)
+    patron_type = String(required=True)
+    hold_id = Identifier(required=True)
+    book_id = Identifier(required=True)
+    branch_id = Identifier(required=True)
     hold_type = String(required=True)
     request_date = DateTime(required=True)
     expiry_date = DateTime(required=True)

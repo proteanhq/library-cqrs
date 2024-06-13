@@ -1,8 +1,10 @@
 from enum import Enum
 
+from protean import handle
 from protean.fields import String
 
 from lending.domain import lending
+from lending import HoldPlaced
 
 
 class BookStatus(Enum):
@@ -30,3 +32,15 @@ class Book:
         choices=BookStatus,
         default=BookStatus.AVAILABLE.value,
     )
+
+
+@lending.event_handler(part_of=Book)
+class PatronHoldEventsHandler:
+    @handle(HoldPlaced)
+    def mark_book_on_hold(self, event: HoldPlaced):
+        repo = lending.repository_for(Book)
+        book = repo.get(event.book_id)
+
+        book.status = BookStatus.ON_HOLD.value
+
+        repo.add(book)
