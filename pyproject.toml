@@ -14,16 +14,16 @@ classifiers=[
 
 [tool.poetry.dependencies]
 python = "^3.11"
-# protean = {version = "0.11.0", extras=[] }
-protean = {path = "../../protean", develop = true}
+protean = {version = "0.12.0", extras=[] }
 
 [tool.poetry.group.test]
 optional = true
 
 [tool.poetry.group.test.dependencies]
+faker = "^25.4.0"
 pytest = "^8.2.1"
 pytest-bdd = "^7.1.2"
-faker = "^25.4.0"
+pytest-cov = "^5.0.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.7"
@@ -31,3 +31,13 @@ ruff = "^0.4.7"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+# TOOLING #
+
+[tool.pytest.ini_options]
+addopts = [
+    "tests/lending",
+    "--cov=src/lending",
+    "--cov-report=term-missing",
+    "--cov-branch"
+]
