@@ -1,20 +1,18 @@
+from datetime import date, timedelta
+
 import pytest
-
-from datetime import datetime, timedelta
-
-from pytest_bdd import given, when, then
-
 from protean.exceptions import ValidationError
-from protean.globals import g, current_domain
+from protean.globals import current_domain, g
+from pytest_bdd import given, then, when
 
 from lending import (
     Book,
     BookStatus,
     BookType,
-    place_hold,
-    HoldType,
-    HoldStatus,
     DailySheetService,
+    HoldStatus,
+    HoldType,
+    place_hold,
 )
 
 
@@ -45,6 +43,7 @@ def restricted_book(book):
 
 @given("a regular patron is logged in")
 @given("a patron is logged in")
+@given("the patron is logged in")
 def regular_patron(regular_patron):
     g.current_user = regular_patron
 
@@ -72,7 +71,7 @@ def closed_ended_hold_placed():
 
 @given("the hold has reached its expiry date")
 def hold_expired():
-    g.current_user.holds[0].expiry_date = datetime.now() - timedelta(days=1)
+    g.current_user.holds[0].expiry_date = date.today() - timedelta(days=1)
 
 
 @given("patron has fewer than five holds")
@@ -101,7 +100,7 @@ def patron_with_expired_hold(patron, book):
     g.current_book = book
 
     place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED)()
-    g.current_user.holds[0].expiry_date = datetime.now() - timedelta(days=1)
+    g.current_user.holds[0].expiry_date = date.today() - timedelta(days=1)
 
 
 @given("a patron has a hold that has been checked out")

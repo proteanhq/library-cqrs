@@ -1,23 +1,21 @@
-from lending.patron import (
-    Patron,
-    PatronType,
-    Hold,
-    HoldType,
-    HoldStatus,
-    Checkout,
-    CheckoutStatus,
-    HoldPlaced
-)
-
 from lending.book import (
     Book,
     BookStatus,
     BookType,
 )
-
-from lending.holding_service import place_hold
-from lending.daily_sheet_service import DailySheetService
 from lending.checkout_service import checkout
+from lending.daily_sheet_service import DailySheetService
+from lending.holding_service import place_hold
+from lending.patron import (
+    Checkout,
+    CheckoutStatus,
+    Hold,
+    HoldPlaced,
+    HoldStatus,
+    HoldType,
+    Patron,
+    PatronType,
+)
 
 __all__ = [
     "Patron",

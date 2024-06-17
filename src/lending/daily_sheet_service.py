@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
+from datetime import date
 
-from lending import Patron, Book, HoldStatus
+from lending import Book, HoldStatus, Patron
 from lending.domain import lending
 
 
@@ -18,12 +18,12 @@ class DailySheetService:
             for hold in patron.holds:
                 if (
                     hold.status == HoldStatus.ACTIVE.value
-                    and hold.expiry_date < datetime.now()
+                    and hold.expiry_date < date.today()
                 ):
                     patron.expire_hold(hold.id)
 
     def _overdue_checkouts(self):
         for patron in self.patrons:
             for checkout in patron.checkouts:
-                if checkout.due_date < datetime.now(timezone.utc):
+                if checkout.due_date < date.today():
                     checkout.overdue()

@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta
-
 from protean import invariant
 from protean.exceptions import ValidationError
 from protean.fields import Identifier
 
+from lending import Book, BookType, Checkout, HoldStatus, Patron, PatronType
 from lending.domain import lending
-from lending import Patron, Book, Checkout, HoldStatus, BookType, PatronType
 
 
 @lending.domain_service(part_of=[Patron, Book])
@@ -34,8 +32,6 @@ class checkout:
             Checkout(
                 book_id=self.book.id,
                 branch_id=self.branch_id,
-                checkout_date=datetime.now(),
-                due_date=datetime.now() + timedelta(days=60),
             )
         )
 

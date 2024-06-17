@@ -17,3 +17,6 @@ provider = "inline"
 
 [caches.default]
 provider = "memory"
+
+[custom]
+CHECKOUT_PERIOD = 60  # Days

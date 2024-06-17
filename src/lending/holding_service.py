@@ -1,19 +1,19 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from protean import invariant
-from protean.fields import Identifier
 from protean.exceptions import ValidationError
+from protean.fields import Identifier
 
 from lending import (
+    Book,
+    BookStatus,
+    BookType,
     Hold,
+    HoldPlaced,
     HoldStatus,
     HoldType,
-    HoldPlaced,
     Patron,
     PatronType,
-    Book,
-    BookType,
-    BookStatus,
 )
 from lending.domain import lending
 
@@ -72,8 +72,7 @@ class place_hold:
         overdue_checkouts_in_branch = [
             checkout
             for checkout in self.patron.checkouts
-            if checkout.due_date < datetime.now()
-            and checkout.branch_id == self.branch_id
+            if checkout.due_date < date.today() and checkout.branch_id == self.branch_id
         ]
         if len(overdue_checkouts_in_branch) > 2:
             raise ValidationError(
@@ -91,7 +90,7 @@ class place_hold:
             hold_type=self.hold_type.value,
             status=HoldStatus.ACTIVE.value,
             request_date=datetime.now(),
-            expiry_date=datetime.now() + timedelta(days=7),
+            expiry_date=date.today() + timedelta(days=7),
         )
         self.patron.add_holds(hold)
 
@@ -104,6 +103,6 @@ class place_hold:
                 branch_id=hold.branch_id,
                 hold_type=hold.hold_type,
                 request_date=hold.request_date,
-                expiry_date=hold.expiry_date
+                expiry_date=hold.expiry_date,
             )
         )

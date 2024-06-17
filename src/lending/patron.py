@@ -1,8 +1,8 @@
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum
 
 from protean.exceptions import ObjectNotFoundError, ValidationError
-from protean.fields import DateTime, HasMany, Identifier, String
+from protean.fields import Date, DateTime, HasMany, Identifier, String
 
 from lending.domain import lending
 
@@ -65,13 +65,13 @@ class Hold:
     hold_type = String(max_length=12, default=HoldType.CLOSED_ENDED.value)
     status = String(max_length=11, default=HoldStatus.ACTIVE.value)
     request_date = DateTime(required=True)
-    expiry_date = DateTime(required=True)
+    expiry_date = Date(required=True)
 
     def expire(self):
         self.status = HoldStatus.EXPIRED.value
 
     def cancel(self):
-        if self.status == HoldStatus.EXPIRED.value or self.expiry_date < datetime.now():
+        if self.status == HoldStatus.EXPIRED.value or self.expiry_date < date.today():
             raise ValidationError({"expired_hold": ["Cannot cancel expired holds"]})
 
         if self.status == HoldStatus.CHECKED_OUT.value:
@@ -95,7 +95,11 @@ class Checkout:
     branch_id = Identifier(required=True)
     checkout_date = DateTime(required=True, default=utc_now)
     status = String(max_length=11, default=CheckoutStatus.ACTIVE.value)
-    due_date = DateTime(required=True, default=lambda: utc_now() + timedelta(days=7))
+    due_date = Date(
+        required=True,
+        default=lambda: date.today()
+        + timedelta(days=lending.config["custom"]["CHECKOUT_PERIOD"]),
+    )
     return_date = DateTime()
 
     def return_(self):

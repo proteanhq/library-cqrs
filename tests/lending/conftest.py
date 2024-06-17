@@ -1,9 +1,10 @@
-import lending
 import os
-import pytest
-
 from datetime import timedelta
+
+import pytest
 from faker import Faker
+
+import lending
 
 Faker.seed(0)
 fake = Faker()
@@ -70,9 +71,9 @@ def researcher_patron(patron):
 
 @pytest.fixture
 def overdue_checkouts_patron(patron):
-    checkout_date1 = fake.date_time_between(start_date="-90d", end_date="-61d")
-    checkout_date2 = fake.date_time_between(start_date="-80d", end_date="-71d")
-    checkout_date3 = fake.date_time_between(start_date="-85d", end_date="-75d")
+    checkout_date1 = fake.date_between(start_date="-90d", end_date="-61d")
+    checkout_date2 = fake.date_between(start_date="-80d", end_date="-71d")
+    checkout_date3 = fake.date_between(start_date="-85d", end_date="-75d")
     patron.checkouts = [
         lending.Checkout(
             branch_id="1",

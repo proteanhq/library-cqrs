@@ -37,7 +37,7 @@ Feature: Place a Hold on a Book
   Scenario: Patron with two overdue checkouts at the branch tries to place a hold
     Given a circulating book is available
     And a patron has more than two overdue checkouts at the branch
-    And a patron is logged in
+    And the patron is logged in
     When the patron tries to place a hold on a book
     Then the hold placement is rejected
     And the book is not marked as held

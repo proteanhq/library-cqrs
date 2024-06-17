@@ -27,6 +27,7 @@ pytest-cov = "^5.0.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.7"
+pre-commit = "^3.7.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -41,3 +42,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-branch"
 ]
+
+[tool.ruff.lint.isort]
+known-first-party = ["lending"]
+known-third-party = ["protean"]

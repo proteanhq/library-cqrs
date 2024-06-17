@@ -3,8 +3,8 @@ from enum import Enum
 from protean import handle
 from protean.fields import String
 
-from lending.domain import lending
 from lending import HoldPlaced
+from lending.domain import lending
 
 
 class BookStatus(Enum):

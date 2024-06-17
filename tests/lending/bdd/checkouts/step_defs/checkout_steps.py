@@ -1,21 +1,21 @@
+from datetime import date, timedelta
+
 import pytest
-
-from datetime import datetime, timedelta, timezone
-
-from pytest_bdd import given, when, then
-
 from protean.exceptions import ValidationError
-from protean.globals import g
-
-from lending import Book, Patron, Checkout
+from protean.globals import current_domain, g
+from pytest_bdd import given, then, when
+from pytest_bdd.parsers import cfparse
 
 from lending import (
-    place_hold,
-    HoldType,
-    checkout,
+    Book,
     BookType,
+    Checkout,
     CheckoutStatus,
     DailySheetService,
+    HoldType,
+    Patron,
+    checkout,
+    place_hold,
 )
 
 
@@ -89,7 +89,7 @@ def system_has_overdue_checkouts():
         ]
     )
     # Manually expire a checkout
-    patron1.checkouts[0].due_date = datetime.now(timezone.utc) - timedelta(days=1)
+    patron1.checkouts[0].due_date = date.today() - timedelta(days=1)
 
     patron2.add_checkouts(
         Checkout(
@@ -98,7 +98,7 @@ def system_has_overdue_checkouts():
         )
     )
     # Manually exipre a checkout
-    patron2.checkouts[0].due_date = datetime.now(timezone.utc) - timedelta(days=1)
+    patron2.checkouts[0].due_date = date.today() - timedelta(days=1)
 
     g.current_patrons = [patron1, patron2]
 
@@ -129,6 +129,14 @@ def process_overdue_checkouts():
 def confirm_checkout_book():
     assert len(g.current_user.checkouts) == 1
     assert g.current_user.checkouts[0].book_id == g.current_book.id
+
+
+@then(cfparse("the checkout has a validity of {validity_days_config}"))
+def confirm_checkout_expiry(validity_days_config):
+    checkout = g.current_user.checkouts[0]
+    assert checkout.due_date == date.today() + timedelta(
+        days=current_domain.config["custom"][validity_days_config]
+    )
 
 
 @then("the checkout is rejected")

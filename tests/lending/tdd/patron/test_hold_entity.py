@@ -1,7 +1,6 @@
 from protean.reflection import declared_fields
 from protean.utils import DomainObjects
 
-
 from lending import Hold
 
 
