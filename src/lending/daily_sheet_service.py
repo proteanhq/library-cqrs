@@ -1,7 +1,8 @@
 from datetime import date
 
-from lending import Book, HoldStatus, Patron
+from lending.book import Book
 from lending.domain import lending
+from lending.patron import HoldStatus, Patron
 
 
 @lending.domain_service(part_of=[Patron, Book])

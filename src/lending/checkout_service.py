@@ -2,7 +2,8 @@ from protean import invariant
 from protean.exceptions import ValidationError
 from protean.fields import Identifier
 
-from lending import Book, BookType, Checkout, HoldStatus, Patron, PatronType
+from lending.patron import Checkout, HoldStatus, Patron, PatronType
+from lending.book import Book, BookType
 from lending.domain import lending
 
 
