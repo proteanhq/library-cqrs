@@ -1,12 +1,12 @@
-from lending.book import (
+from lending.model.book import (
     Book,
     BookStatus,
     BookType,
 )
-from lending.checkout_service import checkout
-from lending.daily_sheet_service import DailySheetService
-from lending.holding_service import place_hold
-from lending.patron import (
+from lending.model.checkout_service import checkout
+from lending.model.daily_sheet_service import DailySheetService
+from lending.model.holding_service import place_hold
+from lending.model.patron import (
     Checkout,
     CheckoutStatus,
     Hold,

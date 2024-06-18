@@ -15,8 +15,8 @@ Feature: Check Out a Book
     When the patron checks out the book
     Then the checkout is successfully completed
 
-  Scenario: Patron tries to check out a restricted book without holding
+  Scenario: Regular Patron tries to check out a restricted book without holding
     Given a restricted book is available
-    And a patron is logged in
+    And a regular patron is logged in
     When the patron tries to check out the book
     Then the checkout is rejected

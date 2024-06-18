@@ -2,9 +2,9 @@ from protean import invariant
 from protean.exceptions import ObjectNotFoundError, ValidationError
 from protean.fields import Identifier
 
-from lending.book import Book, BookType
 from lending.domain import lending
-from lending.patron import BookCheckedOut, Checkout, Patron, PatronType
+from lending.model.book import Book, BookType
+from lending.model.patron import BookCheckedOut, Checkout, Patron, PatronType
 
 
 @lending.domain_service(part_of=[Patron, Book])

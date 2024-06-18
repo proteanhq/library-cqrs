@@ -43,6 +43,7 @@ def restricted_book(book):
 
 
 @given("a patron is logged in")
+@given("a regular patron is logged in")
 def regular_patron(regular_patron):
     g.current_user = regular_patron
 
