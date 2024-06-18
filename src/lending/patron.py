@@ -55,6 +55,20 @@ class HoldPlaced:
     expiry_date = DateTime(required=True)
 
 
+@lending.event(part_of="Patron")
+class HoldCancelled:
+    """Event raised when a hold placed by a patron is cancelled"""
+
+    patron_id = Identifier(required=True)
+    patron_type = String(required=True)
+    hold_id = Identifier(required=True)
+    branch_id = Identifier(required=True)
+    book_id = Identifier(required=True)
+    hold_type = String(required=True)
+    request_date = DateTime(required=True)
+    expiry_date = DateTime(required=True)
+
+
 @lending.entity(part_of="Patron")
 class Hold:
     """A reservation placed by a patron on a book.
@@ -70,6 +84,18 @@ class Hold:
     def expire(self):
         self.status = HoldStatus.EXPIRED.value
 
+        self.raise_(
+            HoldExpired(
+                patron_id=self._owner.id,
+                hold_id=self.id,
+                branch_id=self.branch_id,
+                book_id=self.book_id,
+                hold_type=self.hold_type,
+                request_date=self.request_date,
+                expiry_date=self.expiry_date,
+            )
+        )
+
     def cancel(self):
         if self.status == HoldStatus.EXPIRED.value or self.expiry_date < date.today():
             raise ValidationError({"expired_hold": ["Cannot cancel expired holds"]})
@@ -78,6 +104,19 @@ class Hold:
             raise ValidationError({"checked_out": ["Cannot cancel a checked out hold"]})
 
         self.status = HoldStatus.CANCELLED.value
+
+        self.raise_(
+            HoldCancelled(
+                patron_id=self._owner.id,
+                patron_type=self._owner.patron_type,
+                hold_id=self.id,
+                book_id=self.book_id,
+                branch_id=self.branch_id,
+                hold_type=self.hold_type,
+                request_date=self.request_date,
+                expiry_date=self.expiry_date,
+            )
+        )
 
 
 class CheckoutStatus(Enum):
@@ -127,18 +166,6 @@ class Patron:
             raise ValidationError({"hold": ["Hold does not exist"]})
 
         hold.expire()
-
-        self.raise_(
-            HoldExpired(
-                patron_id=self.id,
-                hold_id=hold.id,
-                branch_id=hold.branch_id,
-                book_id=hold.book_id,
-                hold_type=hold.hold_type,
-                request_date=hold.request_date,
-                expiry_date=hold.expiry_date,
-            )
-        )
 
     def cancel_hold(self, hold_id: Identifier):
         try:

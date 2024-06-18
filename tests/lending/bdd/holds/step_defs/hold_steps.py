@@ -207,13 +207,26 @@ def hold_rejected():
 def check_hold_expired():
     assert g.current_user.holds[0].status == HoldStatus.EXPIRED.value
 
+    # Confirm HoldExpired not in events
+    assert "HoldExpired" in [
+        event.__class__.__name__ for event in g.current_user._events
+    ]
+
 
 @then("the hold is successfully canceled")
 def check_hold_canceled():
     assert g.current_user.holds[0].status == HoldStatus.CANCELLED.value
+
+    # HoldCancelled is raised after HoldPlaced
+    assert g.current_user._events[1].__class__.__name__ == "HoldCancelled"
 
 
 @then("the cancellation is rejected")
 def check_hold_cancellation_rejected():
     assert hasattr(g, "current_exception")
     assert isinstance(g.current_exception, ValidationError)
+
+    # Confirm HoldCancelled not in events
+    assert "HoldCancelled" not in [
+        event.__class__.__name__ for event in g.current_user._events
+    ]

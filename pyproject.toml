@@ -38,9 +38,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 addopts = [
     "tests/lending",
-    "--cov=src/lending",
-    "--cov-report=term-missing",
-    "--cov-branch"
 ]
 
 [tool.ruff.lint.isort]
