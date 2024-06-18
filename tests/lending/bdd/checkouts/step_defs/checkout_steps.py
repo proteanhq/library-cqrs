@@ -130,6 +130,10 @@ def confirm_checkout_book():
     assert len(g.current_user.checkouts) == 1
     assert g.current_user.checkouts[0].book_id == g.current_book.id
 
+    assert "BookCheckedOut" in [
+        event.__class__.__name__ for event in g.current_user._events
+    ]
+
 
 @then(cfparse("the checkout has a validity of {validity_days_config}"))
 def confirm_checkout_expiry(validity_days_config):
@@ -150,13 +154,29 @@ def confirm_returned_status():
     assert g.current_user.checkouts[0].status == "RETURNED"
 
 
-@then("the return is successfully processed")
+@then("the book is successfully returned")
 def confirm_successful_return():
     assert hasattr(g, "current_exception") is False
 
+    assert "BookReturned" in [
+        event.__class__.__name__ for event in g.current_user._events
+    ]
 
-@then("the checkout statuses are updated to overdue")
+
+@then("the checkouts are marked overdue")
 def confirm_overdue_marking():
     assert g.current_patrons[0].checkouts[0].status == "OVERDUE"
     assert g.current_patrons[1].checkouts[0].status == "OVERDUE"
     assert hasattr(g, "current_exception") is False
+
+    assert "BookOverdue" in [
+        event.__class__.__name__ for event in g.current_patrons[0]._events
+    ]
+    assert "BookOverdue" in [
+        event.__class__.__name__ for event in g.current_patrons[1]._events
+    ]
+
+
+@then("the hold is marked as checked out")
+def confirm_hold_checked_out():
+    assert g.current_user.holds[0].status == "CHECKED_OUT"

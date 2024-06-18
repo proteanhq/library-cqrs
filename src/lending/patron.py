@@ -81,6 +81,9 @@ class Hold:
     request_date = DateTime(required=True)
     expiry_date = Date(required=True)
 
+    def checkout(self):
+        self.status = HoldStatus.CHECKED_OUT.value
+
     def expire(self):
         self.status = HoldStatus.EXPIRED.value
 
@@ -125,6 +128,43 @@ class CheckoutStatus(Enum):
     OVERDUE = "OVERDUE"
 
 
+@lending.event(part_of="Patron")
+class BookCheckedOut:
+    """Event raised when a patron checks out a book"""
+
+    patron_id = Identifier(required=True)
+    patron_type = String(required=True)
+    book_id = Identifier(required=True)
+    branch_id = Identifier(required=True)
+    checkout_date = DateTime(required=True)
+    due_date = Date(required=True)
+
+
+@lending.event(part_of="Patron")
+class BookReturned:
+    """Event raised when a patron returns a book"""
+
+    patron_id = Identifier(required=True)
+    patron_type = String(required=True)
+    book_id = Identifier(required=True)
+    branch_id = Identifier(required=True)
+    checkout_date = DateTime(required=True)
+    due_date = Date(required=True)
+    return_date = DateTime(required=True)
+
+
+@lending.event(part_of="Patron")
+class BookOverdue:
+    """Event raised when a book is marked overdue"""
+
+    patron_id = Identifier(required=True)
+    patron_type = String(required=True)
+    book_id = Identifier(required=True)
+    branch_id = Identifier(required=True)
+    checkout_date = DateTime(required=True)
+    due_date = Date(required=True)
+
+
 @lending.entity(part_of="Patron")
 class Checkout:
     """The action of a patron borrowing a book from the library
@@ -145,8 +185,31 @@ class Checkout:
         self.status = CheckoutStatus.RETURNED.value
         self.return_date = datetime.now()
 
+        self.raise_(
+            BookReturned(
+                patron_id=self._owner.id,
+                patron_type=self._owner.patron_type,
+                book_id=self.book_id,
+                branch_id=self.branch_id,
+                checkout_date=self.checkout_date,
+                due_date=self.due_date,
+                return_date=self.return_date,
+            )
+        )
+
     def overdue(self):
         self.status = CheckoutStatus.OVERDUE.value
+
+        self.raise_(
+            BookOverdue(
+                patron_id=self._owner.id,
+                patron_type=self._owner.patron_type,
+                book_id=self.book_id,
+                branch_id=self.branch_id,
+                checkout_date=self.checkout_date,
+                due_date=self.due_date,
+            )
+        )
 
 
 @lending.aggregate

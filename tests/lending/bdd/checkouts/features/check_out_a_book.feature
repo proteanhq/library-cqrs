@@ -7,6 +7,7 @@ Feature: Check Out a Book
     When the patron checks out the book
     Then the checkout is successfully completed
     And the checkout has a validity of CHECKOUT_PERIOD
+    And the hold is marked as checked out
 
   Scenario: Patron checks out an available circulating book
     Given a circulating book is available

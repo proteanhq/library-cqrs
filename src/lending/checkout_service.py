@@ -1,10 +1,10 @@
 from protean import invariant
-from protean.exceptions import ValidationError
+from protean.exceptions import ObjectNotFoundError, ValidationError
 from protean.fields import Identifier
 
-from lending.patron import Checkout, HoldStatus, Patron, PatronType
 from lending.book import Book, BookType
 from lending.domain import lending
+from lending.patron import BookCheckedOut, Checkout, Patron, PatronType
 
 
 @lending.domain_service(part_of=[Patron, Book])
@@ -29,19 +29,30 @@ class checkout:
             )
 
     def __call__(self):
-        self.patron.add_checkouts(
-            Checkout(
-                book_id=self.book.id,
-                branch_id=self.branch_id,
-            )
+        checkout = Checkout(
+            book_id=self.book.id,
+            branch_id=self.branch_id,
         )
+        self.patron.add_checkouts(checkout)
 
         # Find and update hold corresponding to book if it exists
+        hold = None
         try:
-            hold = next(h for h in self.patron.holds if h.book_id == self.book.id)
-        except StopIteration:
+            hold = self.patron.get_one_from_holds(book_id=self.book.id)
+        except ObjectNotFoundError:
             hold = None
 
         if hold:
-            hold.status = HoldStatus.CHECKED_OUT.value
-            self.patron.add_holds(hold)
+            hold.checkout()
+
+        # Raise Event
+        checkout.raise_(
+            BookCheckedOut(
+                patron_id=self.patron.id,
+                patron_type=self.patron.patron_type,
+                book_id=self.book.id,
+                branch_id=self.branch_id,
+                checkout_date=checkout.checkout_date,
+                due_date=checkout.due_date,
+            )
+        )
