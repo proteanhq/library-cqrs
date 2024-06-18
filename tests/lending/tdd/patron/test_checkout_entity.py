@@ -11,5 +11,5 @@ def test_checkout_entity_element_type():
 def test_checkout_entity_declared_fields():
     assert all(
         field_name in declared_fields(Checkout)
-        for field_name in ["id", "book_id", "checkout_date", "due_date"]
+        for field_name in ["id", "book_id", "checked_out_at", "due_on"]
     )

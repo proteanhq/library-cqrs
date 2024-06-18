@@ -19,12 +19,12 @@ class DailySheetService:
             for hold in patron.holds:
                 if (
                     hold.status == HoldStatus.ACTIVE.value
-                    and hold.expiry_date < date.today()
+                    and hold.expires_on < date.today()
                 ):
                     patron.expire_hold(hold.id)
 
     def _overdue_checkouts(self):
         for patron in self.patrons:
             for checkout in patron.checkouts:
-                if checkout.due_date < date.today():
+                if checkout.due_on < date.today():
                     checkout.overdue()

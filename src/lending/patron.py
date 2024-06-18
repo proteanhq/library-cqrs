@@ -37,8 +37,8 @@ class HoldExpired:
     branch_id = Identifier(required=True)
     book_id = Identifier(required=True)
     hold_type = String(required=True)
-    request_date = DateTime(required=True)
-    expiry_date = DateTime(required=True)
+    requested_at = DateTime(required=True)
+    expires_on = Date()
 
 
 @lending.event(part_of="Patron")
@@ -51,8 +51,8 @@ class HoldPlaced:
     book_id = Identifier(required=True)
     branch_id = Identifier(required=True)
     hold_type = String(required=True)
-    request_date = DateTime(required=True)
-    expiry_date = DateTime(required=True)
+    requested_at = DateTime(required=True)
+    expires_on = Date()
 
 
 @lending.event(part_of="Patron")
@@ -65,8 +65,8 @@ class HoldCancelled:
     branch_id = Identifier(required=True)
     book_id = Identifier(required=True)
     hold_type = String(required=True)
-    request_date = DateTime(required=True)
-    expiry_date = DateTime(required=True)
+    requested_at = DateTime(required=True)
+    expires_on = Date()
 
 
 @lending.entity(part_of="Patron")
@@ -78,8 +78,8 @@ class Hold:
     branch_id = Identifier(required=True)
     hold_type = String(max_length=12, default=HoldType.CLOSED_ENDED.value)
     status = String(max_length=11, default=HoldStatus.ACTIVE.value)
-    request_date = DateTime(required=True)
-    expiry_date = Date(required=True)
+    requested_at = DateTime(required=True)
+    expires_on = Date()
 
     def checkout(self):
         self.status = HoldStatus.CHECKED_OUT.value
@@ -94,13 +94,13 @@ class Hold:
                 branch_id=self.branch_id,
                 book_id=self.book_id,
                 hold_type=self.hold_type,
-                request_date=self.request_date,
-                expiry_date=self.expiry_date,
+                requested_at=self.requested_at,
+                expires_on=self.expires_on,
             )
         )
 
     def cancel(self):
-        if self.status == HoldStatus.EXPIRED.value or self.expiry_date < date.today():
+        if self.status == HoldStatus.EXPIRED.value or self.expires_on < date.today():
             raise ValidationError({"expired_hold": ["Cannot cancel expired holds"]})
 
         if self.status == HoldStatus.CHECKED_OUT.value:
@@ -116,8 +116,8 @@ class Hold:
                 book_id=self.book_id,
                 branch_id=self.branch_id,
                 hold_type=self.hold_type,
-                request_date=self.request_date,
-                expiry_date=self.expiry_date,
+                requested_at=self.requested_at,
+                expires_on=self.expires_on,
             )
         )
 
@@ -136,8 +136,8 @@ class BookCheckedOut:
     patron_type = String(required=True)
     book_id = Identifier(required=True)
     branch_id = Identifier(required=True)
-    checkout_date = DateTime(required=True)
-    due_date = Date(required=True)
+    checked_out_at = DateTime(required=True)
+    due_on = Date(required=True)
 
 
 @lending.event(part_of="Patron")
@@ -148,9 +148,9 @@ class BookReturned:
     patron_type = String(required=True)
     book_id = Identifier(required=True)
     branch_id = Identifier(required=True)
-    checkout_date = DateTime(required=True)
-    due_date = Date(required=True)
-    return_date = DateTime(required=True)
+    checked_out_at = DateTime(required=True)
+    due_on = Date(required=True)
+    returned_at = DateTime(required=True)
 
 
 @lending.event(part_of="Patron")
@@ -161,8 +161,8 @@ class BookOverdue:
     patron_type = String(required=True)
     book_id = Identifier(required=True)
     branch_id = Identifier(required=True)
-    checkout_date = DateTime(required=True)
-    due_date = Date(required=True)
+    checked_out_at = DateTime(required=True)
+    due_on = Date(required=True)
 
 
 @lending.entity(part_of="Patron")
@@ -172,18 +172,18 @@ class Checkout:
 
     book_id = Identifier(required=True)
     branch_id = Identifier(required=True)
-    checkout_date = DateTime(required=True, default=utc_now)
+    checked_out_at = DateTime(required=True, default=utc_now)
     status = String(max_length=11, default=CheckoutStatus.ACTIVE.value)
-    due_date = Date(
+    due_on = Date(
         required=True,
         default=lambda: date.today()
         + timedelta(days=lending.config["custom"]["CHECKOUT_PERIOD"]),
     )
-    return_date = DateTime()
+    returned_at = DateTime()
 
     def return_(self):
         self.status = CheckoutStatus.RETURNED.value
-        self.return_date = datetime.now()
+        self.returned_at = datetime.now()
 
         self.raise_(
             BookReturned(
@@ -191,9 +191,9 @@ class Checkout:
                 patron_type=self._owner.patron_type,
                 book_id=self.book_id,
                 branch_id=self.branch_id,
-                checkout_date=self.checkout_date,
-                due_date=self.due_date,
-                return_date=self.return_date,
+                checked_out_at=self.checked_out_at,
+                due_on=self.due_on,
+                returned_at=self.returned_at,
             )
         )
 
@@ -206,8 +206,8 @@ class Checkout:
                 patron_type=self._owner.patron_type,
                 book_id=self.book_id,
                 branch_id=self.branch_id,
-                checkout_date=self.checkout_date,
-                due_date=self.due_date,
+                checked_out_at=self.checked_out_at,
+                due_on=self.due_on,
             )
         )
 

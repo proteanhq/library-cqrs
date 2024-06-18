@@ -71,27 +71,27 @@ def researcher_patron(patron):
 
 @pytest.fixture
 def overdue_checkouts_patron(patron):
-    checkout_date1 = fake.date_between(start_date="-90d", end_date="-61d")
-    checkout_date2 = fake.date_between(start_date="-80d", end_date="-71d")
-    checkout_date3 = fake.date_between(start_date="-85d", end_date="-75d")
+    checkout_date1 = fake.date_time_between(start_date="-90d", end_date="-61d")
+    checkout_date2 = fake.date_time_between(start_date="-80d", end_date="-71d")
+    checkout_date3 = fake.date_time_between(start_date="-85d", end_date="-75d")
     patron.checkouts = [
         lending.Checkout(
             branch_id="1",
             book_id=fake.uuid4(),
-            checkout_date=checkout_date1,
-            due_date=checkout_date1 + timedelta(days=60),
+            checked_out_at=checkout_date1,
+            due_on=checkout_date1.date() + timedelta(days=60),
         ),
         lending.Checkout(
             branch_id="1",
             book_id=fake.uuid4(),
-            checkout_date=checkout_date2,
-            due_date=checkout_date2 + timedelta(days=60),
+            checked_out_at=checkout_date2,
+            due_on=checkout_date2.date() + timedelta(days=60),
         ),
         lending.Checkout(
             branch_id="1",
             book_id=fake.uuid4(),
-            checkout_date=checkout_date3,
-            due_date=checkout_date3 + timedelta(days=60),
+            checked_out_at=checkout_date3,
+            due_on=checkout_date3.date() + timedelta(days=60),
         ),
     ]
     return patron

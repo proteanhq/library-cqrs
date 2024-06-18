@@ -5,6 +5,7 @@ Feature: Handle Open-ended and Closed-ended Holds
     And a researcher patron is logged in
     When the patron places an open-ended hold
     Then the hold is successfully placed
+    And the hold does not have an expiry date
 
   Scenario: Regular patron tries to place an open-ended hold
     Given a circulating book is available

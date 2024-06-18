@@ -52,7 +52,7 @@ class checkout:
                 patron_type=self.patron.patron_type,
                 book_id=self.book.id,
                 branch_id=self.branch_id,
-                checkout_date=checkout.checkout_date,
-                due_date=checkout.due_date,
+                checked_out_at=checkout.checked_out_at,
+                due_on=checkout.due_on,
             )
         )

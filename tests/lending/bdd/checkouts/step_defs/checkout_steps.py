@@ -63,7 +63,7 @@ def patron_with_checkout(regular_patron, book):
 @given("the book is overdue")
 def mark_checkout_overdue():
     patron = g.current_user
-    patron.checkouts[0].due_date = patron.checkouts[0].due_date - timedelta(days=1)
+    patron.checkouts[0].due_on = patron.checkouts[0].due_on - timedelta(days=1)
     patron.checkouts[0].status = CheckoutStatus.OVERDUE.value
 
 
@@ -89,7 +89,7 @@ def system_has_overdue_checkouts():
         ]
     )
     # Manually expire a checkout
-    patron1.checkouts[0].due_date = date.today() - timedelta(days=1)
+    patron1.checkouts[0].due_on = date.today() - timedelta(days=1)
 
     patron2.add_checkouts(
         Checkout(
@@ -98,7 +98,7 @@ def system_has_overdue_checkouts():
         )
     )
     # Manually exipre a checkout
-    patron2.checkouts[0].due_date = date.today() - timedelta(days=1)
+    patron2.checkouts[0].due_on = date.today() - timedelta(days=1)
 
     g.current_patrons = [patron1, patron2]
 
@@ -138,7 +138,7 @@ def confirm_checkout_book():
 @then(cfparse("the checkout has a validity of {validity_days_config}"))
 def confirm_checkout_expiry(validity_days_config):
     checkout = g.current_user.checkouts[0]
-    assert checkout.due_date == date.today() + timedelta(
+    assert checkout.due_on == date.today() + timedelta(
         days=current_domain.config["custom"][validity_days_config]
     )
 

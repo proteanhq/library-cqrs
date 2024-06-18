@@ -71,7 +71,7 @@ def closed_ended_hold_placed():
 
 @given("the hold has reached its expiry date")
 def hold_expired():
-    g.current_user.holds[0].expiry_date = date.today() - timedelta(days=1)
+    g.current_user.holds[0].expires_on = date.today() - timedelta(days=1)
 
 
 @given("patron has fewer than five holds")
@@ -100,7 +100,7 @@ def patron_with_expired_hold(patron, book):
     g.current_book = book
 
     place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED)()
-    g.current_user.holds[0].expiry_date = date.today() - timedelta(days=1)
+    g.current_user.holds[0].expires_on = date.today() - timedelta(days=1)
 
 
 @given("a patron has a hold that has been checked out")
@@ -230,3 +230,8 @@ def check_hold_cancellation_rejected():
     assert "HoldCancelled" not in [
         event.__class__.__name__ for event in g.current_user._events
     ]
+
+
+@then("the hold does not have an expiry date")
+def confirm_no_expiry_date():
+    assert g.current_user.holds[0].expires_on is None

@@ -63,7 +63,7 @@ class place_hold:
         overdue_checkouts_in_branch = [
             checkout
             for checkout in self.patron.checkouts
-            if checkout.due_date < date.today() and checkout.branch_id == self.branch_id
+            if checkout.due_on < date.today() and checkout.branch_id == self.branch_id
         ]
         if len(overdue_checkouts_in_branch) > 2:
             raise ValidationError(
@@ -74,14 +74,26 @@ class place_hold:
                 }
             )
 
+    @invariant.post
+    def open_holds_do_not_have_expiry_date(self):
+        if self.hold_type == HoldType.OPEN_ENDED:
+            if self.patron.holds[-1].expires_on:
+                raise ValidationError(
+                    {"expires_on": ["Open-ended holds do not have an expiry date"]}
+                )
+
     def __call__(self):
+        expires_on = None
+        if self.hold_type == HoldType.CLOSED_ENDED:
+            expires_on = date.today() + timedelta(days=7)
+
         hold = Hold(
             book_id=self.book.id,
             branch_id=self.branch_id,
             hold_type=self.hold_type.value,
             status=HoldStatus.ACTIVE.value,
-            request_date=datetime.now(),
-            expiry_date=date.today() + timedelta(days=7),
+            requested_at=datetime.now(),
+            expires_on=expires_on,
         )
         self.patron.add_holds(hold)
 
@@ -93,7 +105,7 @@ class place_hold:
                 book_id=hold.book_id,
                 branch_id=hold.branch_id,
                 hold_type=hold.hold_type,
-                request_date=hold.request_date,
-                expiry_date=hold.expiry_date,
+                requested_at=hold.requested_at,
+                expires_on=hold.expires_on,
             )
         )
