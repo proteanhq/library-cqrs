@@ -1,8 +1,6 @@
 Feature: Generate Daily Sheets for Expiring Holds
 
   Scenario: System generates a daily sheet listing all expiring holds
-    Given the system is running
-    And it is the beginning of the day
     When the system generates a daily sheet for expiring holds
     Then the daily sheet lists all expiring holds
 

@@ -157,6 +157,8 @@ def confirm_returned_status():
 
 @then("the book is successfully returned")
 def confirm_successful_return():
+    if hasattr(g, "current_exception"):
+        print(g.current_exception.messages)
     assert hasattr(g, "current_exception") is False
 
     assert "BookReturned" in [
@@ -168,6 +170,9 @@ def confirm_successful_return():
 def confirm_overdue_marking():
     assert g.current_patrons[0].checkouts[0].status == "OVERDUE"
     assert g.current_patrons[1].checkouts[0].status == "OVERDUE"
+
+    if hasattr(g, "current_exception"):
+        print(g.current_exception.messages)
     assert hasattr(g, "current_exception") is False
 
     assert "BookOverdue" in [

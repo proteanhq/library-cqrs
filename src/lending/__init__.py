@@ -17,6 +17,9 @@ from lending.model.patron import (
     PatronType,
 )
 
+from lending.app.dailysheet import DailySheet  # isort:skip
+
+
 __all__ = [
     "Patron",
     "PatronType",
@@ -32,4 +35,5 @@ __all__ = [
     "place_hold",
     "DailySheetService",
     "checkout",
+    "DailySheet",
 ]

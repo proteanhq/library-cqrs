@@ -132,6 +132,7 @@ class CheckoutStatus(Enum):
 class BookCheckedOut:
     """Event raised when a patron checks out a book"""
 
+    checkout_id = Identifier(required=True)
     patron_id = Identifier(required=True)
     patron_type = String(required=True)
     book_id = Identifier(required=True)
@@ -144,6 +145,7 @@ class BookCheckedOut:
 class BookReturned:
     """Event raised when a patron returns a book"""
 
+    checkout_id = Identifier(required=True)
     patron_id = Identifier(required=True)
     patron_type = String(required=True)
     book_id = Identifier(required=True)
@@ -157,6 +159,7 @@ class BookReturned:
 class BookOverdue:
     """Event raised when a book is marked overdue"""
 
+    checkout_id = Identifier(required=True)
     patron_id = Identifier(required=True)
     patron_type = String(required=True)
     book_id = Identifier(required=True)
@@ -187,6 +190,7 @@ class Checkout:
 
         self.raise_(
             BookReturned(
+                checkout_id=self.id,
                 patron_id=self._owner.id,
                 patron_type=self._owner.patron_type,
                 book_id=self.book_id,
@@ -202,6 +206,7 @@ class Checkout:
 
         self.raise_(
             BookOverdue(
+                checkout_id=self.id,
                 patron_id=self._owner.id,
                 patron_type=self._owner.patron_type,
                 book_id=self.book_id,

@@ -171,6 +171,9 @@ def hold_placed():
     patron = g.current_user
     assert len(patron.holds) == 1
     assert patron.holds[0].book_id == g.current_book.id
+
+    if hasattr(g, "current_exception"):
+        print(g.current_exception.messages)
     assert hasattr(g, "current_exception") is False
 
 
@@ -194,6 +197,9 @@ def holds_placed(five_books):
     assert len(patron.holds) == 6
     assert patron.holds[0].book_id == five_books[0].id
     assert patron.holds[5].book_id == g.current_book.id
+
+    if hasattr(g, "current_exception"):
+        print(g.current_exception.messages)
     assert hasattr(g, "current_exception") is False
 
 

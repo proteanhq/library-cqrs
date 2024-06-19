@@ -48,6 +48,7 @@ class checkout:
         # Raise Event
         checkout.raise_(
             BookCheckedOut(
+                checkout_id=checkout.id,
                 patron_id=self.patron.id,
                 patron_type=self.patron.patron_type,
                 book_id=self.book.id,

@@ -34,7 +34,7 @@ class Book:
     )
 
 
-@lending.event_handler(part_of=Book)
+@lending.event_handler(part_of=Book, stream_name="patron")
 class PatronHoldEventsHandler:
     @handle(HoldPlaced)
     def mark_book_on_hold(self, event: HoldPlaced):
