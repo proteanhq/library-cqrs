@@ -104,7 +104,7 @@ class DailySheetRepository:
         )
 
 
-@lending.event_handler(stream_name="patron")
+@lending.event_handler(stream_category="library::patron")
 class DailySheetManager:
     @handle(HoldExpired)
     def handle_hold_expired(self, event: HoldExpired):

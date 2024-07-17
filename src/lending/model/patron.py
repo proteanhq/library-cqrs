@@ -33,6 +33,7 @@ class HoldExpired:
     """Event raised when a hold on a book placed by a patron expires"""
 
     patron_id = Identifier(required=True)
+    patron_type = String(required=True)
     hold_id = Identifier(required=True)
     branch_id = Identifier(required=True)
     book_id = Identifier(required=True)
@@ -90,6 +91,7 @@ class Hold:
         self.raise_(
             HoldExpired(
                 patron_id=self._owner.id,
+                patron_type=self._owner.patron_type,
                 hold_id=self.id,
                 branch_id=self.branch_id,
                 book_id=self.book_id,
@@ -217,7 +219,7 @@ class Checkout:
         )
 
 
-@lending.aggregate
+@lending.aggregate(fact_events=True)
 class Patron:
     """A user of the public library who can place holds on books, check out books,
     and interact with their current holds and checkouts via their patron profile.

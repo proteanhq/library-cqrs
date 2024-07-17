@@ -7,7 +7,9 @@ Feature: Track Checkouts
     Then the daily sheet contains the ACTIVE checkout record
 
   Scenario: Patron returns a book on or before the due date
-    Given a patron has checked out a book
+    Given a circulating book is available
+    And a patron is logged in
+    And the patron has checked out a book
     When the patron returns the book
     Then the daily sheet contains the RETURNED checkout record
 
