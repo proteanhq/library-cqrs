@@ -165,3 +165,4 @@ cython_debug/
 .DS_Store
 *.todo
 todos
+*.db

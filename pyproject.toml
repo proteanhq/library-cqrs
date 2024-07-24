@@ -11,11 +11,17 @@ classifiers=[
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3 :: Only",
 ]
+packages = [
+    { include = "lending", from = "src" },
+    { include = "catalogue", from = "src" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-protean = {version = "0.12.1", extras=[] }
-# protean = {path = "../../protean", develop = true}
+# protean = {version = "0.12.1", extras=[] }
+protean = { git = "https://github.com/proteanhq/protean.git", branch = "main" }
+sqlalchemy = "^2.0.31"
+fastapi = "^0.111.1"
 
 [tool.poetry.group.test]
 optional = true
@@ -35,11 +41,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 # TOOLING #
-
-[tool.pytest.ini_options]
-addopts = [
-    "tests/lending",
-]
 
 [tool.ruff.lint.isort]
 known-first-party = ["lending"]

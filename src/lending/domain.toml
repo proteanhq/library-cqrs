@@ -20,3 +20,4 @@ provider = "memory"
 
 [custom]
 CHECKOUT_PERIOD = 60  # Days
+HOLD_EXPIRY_DAYS = 7  # Days

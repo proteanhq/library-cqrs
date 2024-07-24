@@ -92,7 +92,7 @@ class place_hold:
     def __call__(self):
         expires_on = None
         if self.hold_type == HoldType.CLOSED_ENDED:
-            expires_on = date.today() + timedelta(days=7)
+            expires_on = date.today() + timedelta(days=lending.HOLD_EXPIRY_DAYS)
 
         hold = Hold(
             book_id=self.book.id,
