@@ -7,30 +7,30 @@ Protean example implementation
 | Source          | [DDD by Examples - Library](https://github.com/ddd-by-examples/library) |
 | Pattern         | CQRS                                                                    |
 | Protean Version | 0.12.1                                                                  |
-| Build Status    | [Build Status](https://github.com/proteanhq/library-cqrs/actions/workflows/ci.yml/badge.svg) |
+| Build Status    | ![Build Status](https://github.com/proteanhq/library-cqrs/actions/workflows/ci.yml/badge.svg) |
 | Coverage        | [![codecov](https://codecov.io/github/proteanhq/library-cqrs/graph/badge.svg?token=onIFcl4Dg5)](https://codecov.io/github/proteanhq/library-cqrs)|
 
 ## Contributing
 
-- Clone this repository:
+1. Clone this repository:
 
-`git clone git@github.com:proteanhq/library-cqrs.git`
+    `git clone git@github.com:proteanhq/library-cqrs.git`
 
-- Set up and activate Python virtual environment:
+1. Set up and activate Python virtual environment:
 
-`python3 -m venv .venv`
+    `python3 -m venv .venv`
 
-`source .venv/bin/activate`
+    `source .venv/bin/activate`
 
-- Install [poetry](https://python-poetry.org/docs/#installation)
+1. Install [poetry](https://python-poetry.org/docs/#installation)
 
-- Install dependencies:
+1. Install dependencies:
 
-`poetry install`
+    `poetry install`
 
-- Install pre-commit hooks:
+1. Install pre-commit hooks:
 
-`pre-commit install`
+    `pre-commit install`
 
 ## Running Tests
 
