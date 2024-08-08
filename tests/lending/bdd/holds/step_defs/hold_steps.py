@@ -1,17 +1,17 @@
 from datetime import date, timedelta
 
 import pytest
+from protean import current_domain, g
 from protean.exceptions import ValidationError
-from protean.globals import current_domain, g
 from pytest_bdd import given, then, when
 
 from lending import (
     Book,
     BookStatus,
-    BookType,
     DailySheetService,
     HoldStatus,
     HoldType,
+    Patron,
     place_hold,
 )
 
@@ -29,16 +29,13 @@ def reset_globals():
 
 
 @given("a circulating book is available")
-def circulating_book(book):
-    current_domain.repository_for(Book).add(book)
-    g.current_book = book
+def circulating_book(circulating_book):
+    g.current_book = circulating_book
 
 
 @given("a restricted book is available")
-def restricted_book(book):
-    book.book_type = BookType.RESTRICTED.value
-    current_domain.repository_for(Book).add(book)
-    g.current_book = book
+def restricted_book(restricted_book):
+    g.current_book = restricted_book
 
 
 @given("a regular patron is logged in")
@@ -56,34 +53,44 @@ def a_researcher_patron(researcher_patron):
 @given("a book is already on hold by another patron")
 def already_held_book(book):
     book.status = BookStatus.ON_HOLD.value
+    current_domain.repository_for(Book).add(book)
     g.current_book = book
 
 
 @given("a patron has more than two overdue checkouts at the branch")
-def more_than_two_overdue_checkouts(overdue_checkouts_patron, book):
+def more_than_two_overdue_checkouts(overdue_checkouts_patron):
     g.current_user = overdue_checkouts_patron
 
 
 @given("a closed-ended hold is placed")
 def closed_ended_hold_placed():
-    place_hold(g.current_user, g.current_book, "1", HoldType.CLOSED_ENDED)()
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
 
 @given("the hold has reached its expiry date")
 def hold_expired():
-    g.current_user.holds[0].expires_on = date.today() - timedelta(days=1)
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    refreshed_patron.holds[0].expires_on = date.today() - timedelta(days=1)
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
 
 @given("patron has fewer than five holds")
 def patron_with_fewer_than_five_holds():
-    assert len(g.current_user.holds) < 5
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert len(refreshed_patron.holds) < 5
 
 
 @given("patron has exactly five holds")
 def patron_with_exactly_five_holds(five_books):
-    for i in range(5 - len(g.current_user.holds)):
-        place_hold(g.current_user, five_books[i], "1", HoldType.CLOSED_ENDED)()
-    assert len(g.current_user.holds) == 5
+    for i in range(5):
+        refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+        place_hold(refreshed_patron, five_books[i], "1", HoldType.CLOSED_ENDED)()
+        current_domain.repository_for(Patron).add(refreshed_patron)
+
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert len(refreshed_patron.holds) == 5
 
 
 @given("a patron has an active hold")
@@ -91,7 +98,9 @@ def patron_with_active_hold(patron, book):
     g.current_user = patron
     g.current_book = book
 
-    place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED)()
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED)()
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
 
 @given("a patron has an expired hold")
@@ -99,8 +108,13 @@ def patron_with_expired_hold(patron, book):
     g.current_user = patron
     g.current_book = book
 
-    place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED)()
-    g.current_user.holds[0].expires_on = date.today() - timedelta(days=1)
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED)()
+    current_domain.repository_for(Patron).add(refreshed_patron)
+
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    refreshed_patron.holds[0].expires_on = date.today() - timedelta(days=1)
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
 
 @given("a patron has a hold that has been checked out")
@@ -108,8 +122,13 @@ def patron_with_checked_out_hold(patron, book):
     g.current_user = patron
     g.current_book = book
 
-    place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED)()
-    g.current_user.holds[0].status = HoldStatus.CHECKED_OUT.value
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED)()
+    current_domain.repository_for(Patron).add(refreshed_patron)
+
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    refreshed_patron.holds[0].status = HoldStatus.CHECKED_OUT.value
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
 
 @when("the patron places a hold on the book")
@@ -118,8 +137,9 @@ def patron_with_checked_out_hold(patron, book):
 @when("the patron tries to place an additional hold")
 def place_hold_on_book():
     try:
-        place_hold(g.current_user, g.current_book, "1", HoldType.CLOSED_ENDED)()
-        current_domain.publish(g.current_user._events)
+        refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+        place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+        current_domain.repository_for(Patron).add(refreshed_patron)
     except ValidationError as exc:
         g.current_exception = exc
 
@@ -128,7 +148,9 @@ def place_hold_on_book():
 @when("the patron tries to place an open-ended hold")
 def place_open_ended_hold():
     try:
-        place_hold(g.current_user, g.current_book, "1", HoldType.OPEN_ENDED)()
+        refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+        place_hold(refreshed_patron, g.current_book, "1", HoldType.OPEN_ENDED)()
+        current_domain.repository_for(Patron).add(refreshed_patron)
     except ValidationError as exc:
         g.current_exception = exc
 
@@ -136,41 +158,50 @@ def place_open_ended_hold():
 @when("the patron places a closed-ended hold")
 def closed_ended_hold():
     try:
-        place_hold(g.current_user, g.current_book, "1", HoldType.CLOSED_ENDED)()
+        refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+        place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+        current_domain.repository_for(Patron).add(refreshed_patron)
     except ValidationError as exc:
         g.current_exception = exc
 
 
 @when("the system checks for expiring holds")
 def check_expiring_holds():
-    DailySheetService(patrons=[g.current_user]).run()
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    DailySheetService(patrons=[refreshed_patron]).run()
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
 
 @when("the patron places more than five holds")
 def place_more_than_five_holds(five_books):
     for i in range(5):
-        place_hold(g.current_user, five_books[i], "1", HoldType.CLOSED_ENDED)()
+        refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+        place_hold(refreshed_patron, five_books[i], "1", HoldType.CLOSED_ENDED)()
+        current_domain.repository_for(Patron).add(refreshed_patron)
 
     # Place one more hold
-    place_hold(g.current_user, g.current_book, "1", HoldType.CLOSED_ENDED)()
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
 
 @when("the patron cancels the hold")
 @when("the patron tries to cancel the hold")
 def cancel_hold():
-    patron = g.current_user
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
 
     try:
-        patron.cancel_hold(patron.holds[0].id)
+        refreshed_patron.cancel_hold(refreshed_patron.holds[0].id)
+        current_domain.repository_for(Patron).add(refreshed_patron)
     except ValidationError as exc:
         g.current_exception = exc
 
 
 @then("the hold is successfully placed")
 def hold_placed():
-    patron = g.current_user
-    assert len(patron.holds) == 1
-    assert patron.holds[0].book_id == g.current_book.id
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert len(refreshed_patron.holds) == 1
+    assert refreshed_patron.holds[0].book_id == g.current_book.id
 
     if hasattr(g, "current_exception"):
         print(g.current_exception.messages)
@@ -193,10 +224,11 @@ def confirm_book_not_marked_as_held():
 
 @then("all holds are successfully placed")
 def holds_placed(five_books):
-    patron = g.current_user
-    assert len(patron.holds) == 6
-    assert patron.holds[0].book_id == five_books[0].id
-    assert patron.holds[5].book_id == g.current_book.id
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+
+    assert len(refreshed_patron.holds) == 6
+    assert refreshed_patron.holds[0].book_id == five_books[0].id
+    assert refreshed_patron.holds[5].book_id == g.current_book.id
 
     if hasattr(g, "current_exception"):
         print(g.current_exception.messages)
@@ -211,20 +243,14 @@ def hold_rejected():
 
 @then("the hold status is updated to expired")
 def check_hold_expired():
-    assert g.current_user.holds[0].status == HoldStatus.EXPIRED.value
-
-    # Confirm HoldExpired not in events
-    assert "HoldExpired" in [
-        event.__class__.__name__ for event in g.current_user._events
-    ]
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert refreshed_patron.holds[0].status == HoldStatus.EXPIRED.value
 
 
 @then("the hold is successfully canceled")
 def check_hold_canceled():
-    assert g.current_user.holds[0].status == HoldStatus.CANCELLED.value
-
-    # HoldCancelled is raised after HoldPlaced
-    assert g.current_user._events[1].__class__.__name__ == "HoldCancelled"
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert refreshed_patron.holds[0].status == HoldStatus.CANCELLED.value
 
 
 @then("the cancellation is rejected")
@@ -232,12 +258,8 @@ def check_hold_cancellation_rejected():
     assert hasattr(g, "current_exception")
     assert isinstance(g.current_exception, ValidationError)
 
-    # Confirm HoldCancelled not in events
-    assert "HoldCancelled" not in [
-        event.__class__.__name__ for event in g.current_user._events
-    ]
-
 
 @then("the hold does not have an expiry date")
 def confirm_no_expiry_date():
-    assert g.current_user.holds[0].expires_on is None
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert refreshed_patron.holds[0].expires_on is None

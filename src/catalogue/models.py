@@ -1,4 +1,15 @@
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
+from sqlalchemy.orm import relationship
 
 from .database import Base
 
@@ -11,6 +22,8 @@ class Book(Base):
     summary = Column(Text)
     price = Column(Float, nullable=False)
 
+    instances = relationship("BookInstance", back_populates="book")
+
 
 class BookInstance(Base):
     __tablename__ = "book_instances"
@@ -18,3 +31,6 @@ class BookInstance(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     isbn = Column(String(13), ForeignKey("books.isbn"), nullable=False)
     is_circulating = Column(Boolean, default=True)
+    added_at = Column(DateTime, server_default=func.now())
+
+    book = relationship("Book", back_populates="instances")

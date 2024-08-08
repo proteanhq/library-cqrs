@@ -6,6 +6,13 @@ services:
     ports:
       - 5433:5432
 
+  redis:
+    image: redis:7.0.11
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+
 volumes:
   db-data:
     driver: local

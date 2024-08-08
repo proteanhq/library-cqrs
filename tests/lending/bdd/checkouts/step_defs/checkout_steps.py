@@ -1,8 +1,8 @@
 from datetime import date, timedelta
 
 import pytest
+from protean import current_domain, g
 from protean.exceptions import ValidationError
-from protean.globals import current_domain, g
 from pytest_bdd import given, then, when
 from pytest_bdd.parsers import cfparse
 

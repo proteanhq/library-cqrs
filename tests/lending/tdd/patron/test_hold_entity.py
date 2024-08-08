@@ -1,5 +1,5 @@
-from protean.reflection import declared_fields
 from protean.utils import DomainObjects
+from protean.utils.reflection import declared_fields
 
 from lending import Hold
 

@@ -1,5 +1,5 @@
 test:
-	pytest
+	pytest tests/lending tests/catalogue
 
 test-cov:
-	pytest --cov=src/lending --cov-report=term-missing --cov-branch
+	pytest tests/lending tests/catalogue --cov=src/lending --cov=src/catalogue --cov-report=term-missing --cov-branch

@@ -3,6 +3,7 @@ from datetime import timedelta
 
 import pytest
 from faker import Faker
+from protean import current_domain
 
 import lending
 
@@ -37,7 +38,7 @@ def run_around_tests():
     """Fixture to automatically cleanup infrastructure after every test"""
     yield
 
-    from protean.globals import current_domain
+    from protean import current_domain
 
     # Clear all databases
     for _, provider in current_domain.providers.items():
@@ -54,18 +55,22 @@ def run_around_tests():
 
 @pytest.fixture
 def patron():
-    return lending.Patron()
+    new_patron = lending.Patron()
+    current_domain.repository_for(lending.Patron).add(new_patron)
+    return new_patron
 
 
 @pytest.fixture
 def regular_patron(patron):
     patron.patron_type = lending.PatronType.REGULAR.value
+    current_domain.repository_for(lending.Patron).add(patron)
     return patron
 
 
 @pytest.fixture
 def researcher_patron(patron):
     patron.patron_type = lending.PatronType.RESEARCHER.value
+    current_domain.repository_for(lending.Patron).add(patron)
     return patron
 
 
@@ -94,28 +99,39 @@ def overdue_checkouts_patron(patron):
             due_on=checkout_date3.date() + timedelta(days=60),
         ),
     ]
+    current_domain.repository_for(lending.Patron).add(patron)
     return patron
 
 
 @pytest.fixture
 def book():
-    return lending.Book(
+    book = lending.Book(
         isbn=fake.isbn13(),
     )
+
+    current_domain.repository_for(lending.Book).add(book)
+    return book
 
 
 @pytest.fixture
 def five_books():
-    return [lending.Book(isbn=fake.isbn13()) for _ in range(5)]
+    five_books = [lending.Book(isbn=fake.isbn13()) for _ in range(5)]
+
+    for book in five_books:
+        current_domain.repository_for(lending.Book).add(book)
+
+    return five_books
 
 
 @pytest.fixture
 def circulating_book(book):
     book.book_type = lending.BookType.CIRCULATING.value
+    current_domain.repository_for(lending.Book).add(book)
     return book
 
 
 @pytest.fixture
 def restricted_book(book):
     book.book_type = lending.BookType.RESTRICTED.value
+    current_domain.repository_for(lending.Book).add(book)
     return book

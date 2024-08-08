@@ -1,9 +1,8 @@
 from datetime import date, timedelta
 
 import pytest
-from protean import UnitOfWork
+from protean import UnitOfWork, current_domain, g
 from protean.exceptions import ValidationError
-from protean.globals import current_domain, g
 from pytest_bdd import given, then, when
 from pytest_bdd.parsers import cfparse
 
@@ -207,22 +206,27 @@ def patron_return_book():
 def generate_daily_sheet(patron, book):
     # Log in Patron
     g.current_user = patron
+    current_domain.repository_for(Patron).add(g.current_user)
 
     # Persist Book
     g.current_book = book
     current_domain.repository_for(Book).add(book)
 
     # Place Hold
-    place_hold(g.current_user, g.current_book, "1", HoldType.CLOSED_ENDED)()
-    current_domain.publish(g.current_user._events)
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
     # Expire Hold
-    g.current_user.holds[0].expires_on = date.today() - timedelta(days=1)
+    refreshed_patron = current_domain.repository_for(Patron).get(patron.id)
+    refreshed_patron.holds[0].expires_on = date.today() - timedelta(days=1)
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
     # Update DailySheet's expiry
+    refreshed_patron = current_domain.repository_for(Patron).get(patron.id)
     daily_sheet_repo = current_domain.repository_for(DailySheet)
     record = daily_sheet_repo.find_hold_for_patron(
-        g.current_user.id, g.current_user.holds[0].id
+        refreshed_patron.id, refreshed_patron.holds[0].id
     )
     record.hold_expires_on = date.today() - timedelta(days=1)
     daily_sheet_repo.add(record)
@@ -232,22 +236,27 @@ def generate_daily_sheet(patron, book):
 def generate_daily_sheet_for_overdue_checkouts(patron, book):
     # Log in Patron
     g.current_user = patron
+    current_domain.repository_for(Patron).add(g.current_user)
 
     # Persist Book
     g.current_book = book
     current_domain.repository_for(Book).add(book)
 
     # Checkout Book
-    checkout(g.current_user, g.current_book, "1")()
-    current_domain.publish(g.current_user._events)
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    checkout(refreshed_patron, g.current_book, "1")()
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
     # Update Book's Due Date
-    g.current_user.checkouts[0].due_on = date.today() - timedelta(days=1)
+    refreshed_patron = current_domain.repository_for(Patron).get(patron.id)
+    refreshed_patron.checkouts[0].due_on = date.today() - timedelta(days=1)
+    current_domain.repository_for(Patron).add(refreshed_patron)
 
     # Update DailySheet's Due Date
+    refreshed_patron = current_domain.repository_for(Patron).get(patron.id)
     daily_sheet_repo = current_domain.repository_for(DailySheet)
     record = daily_sheet_repo.find_checkout_for_patron(
-        g.current_user.id, g.current_user.checkouts[0].id
+        refreshed_patron.id, refreshed_patron.checkouts[0].id
     )
     record.checkout_due_on = date.today() - timedelta(days=1)
     daily_sheet_repo.add(record)

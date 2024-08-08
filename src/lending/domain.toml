@@ -9,14 +9,27 @@ command_processing = "sync"
 [databases.default]
 provider = "memory"
 
+[databases.production]
+provider = "postgresql"
+database_uri = "postgresql://postgres:postgres@localhost:5432/postgres"
+
 [databases.memory]
 provider = "memory"
 
 [brokers.default]
 provider = "inline"
 
+[brokers.production]
+provider = "redis"
+URI = "redis://127.0.0.1:6379/0"
+IS_ASYNC = true
+
 [caches.default]
 provider = "memory"
+
+[event_store]
+provider = "message_db"
+database_uri = "postgresql://message_store@localhost:5433/message_store"
 
 [custom]
 CHECKOUT_PERIOD = 60  # Days

@@ -1,5 +1,7 @@
+import json
 from typing import Annotated
 
+import redis
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -12,6 +14,10 @@ app = FastAPI()
 
 
 Base.metadata.create_all(bind=engine)
+
+
+# Redis setup
+redis_client = redis.Redis(host="localhost", port=6379, db=0)
 
 
 def get_db():
@@ -56,4 +62,17 @@ async def add_book_instance(
 
     db.add(new_book_instance)
     db.commit()
+
+    # Raise Event
+    event_dict = {
+        "instance_id": new_book_instance.id,
+        "isbn": new_book_instance.isbn,
+        "title": new_book_instance.book.title,
+        "summary": new_book_instance.book.summary,
+        "price": new_book_instance.book.price,
+        "is_circulating": new_book_instance.is_circulating,
+        "added_at": new_book_instance.added_at.isoformat(),
+    }
+    redis_client.publish("book_instance_added", json.dumps(event_dict))
+
     return {"message": "Book instance added successfully"}

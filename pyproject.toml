@@ -19,9 +19,11 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.11"
 # protean = {version = "0.12.1", extras=[] }
-protean = { git = "https://github.com/proteanhq/protean.git", branch = "main" }
+protean = { git = "https://github.com/proteanhq/protean.git", branch = "main" , extras=["postgresql", "sqlite", "message_db", "redis"]}
+# protean = { path = "../../protean", develop=true}
 sqlalchemy = "^2.0.31"
 fastapi = "^0.111.1"
+redis = "^5.0.7"
 
 [tool.poetry.group.test]
 optional = true
