@@ -15,7 +15,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--env",
         action="store",
-        default="TESTING",
+        default="test",
         help="Config environment to run tests on",
     )
 
@@ -29,8 +29,20 @@ def pytest_sessionstart(session):
 
     from lending.domain import lending
 
-    lending.domain_context().push()
+    lending.config = lending.load_config()
     lending.init()
+    lending.domain_context().push()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_db(request):
+    from lending.utils.db import drop_db, setup_db
+
+    setup_db()
+
+    yield
+
+    drop_db()
 
 
 @pytest.fixture(autouse=True)

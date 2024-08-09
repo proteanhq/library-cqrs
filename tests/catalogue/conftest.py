@@ -1,11 +1,29 @@
 import pytest
-from catalogue.database import (
-    Base,
-    SessionLocal,
-    engine,
+import redis
+from catalogue.database import Base
+from catalogue.main import app, get_db, get_redis_client
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import clear_mappers, sessionmaker
+
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
-from sqlalchemy import text
-from sqlalchemy.orm import clear_mappers
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def override_get_db():
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
+
+
+# Create a test-specific Redis client
+def override_get_redis_client():
+    return redis.Redis(host="localhost", port=6379, db=1)
 
 
 # Session-level fixture for database setup and teardown
@@ -22,7 +40,7 @@ def setup_database():
 # Function-level fixture for clearing database records
 @pytest.fixture(scope="function")
 def db_session():
-    session = SessionLocal()
+    session = TestingSessionLocal()
     yield session
     session.close()
     # Clear all data after each test
@@ -32,18 +50,19 @@ def db_session():
             connection.commit()
 
 
-# Function-level fixture for TestClient with database session override
 @pytest.fixture(scope="function")
-def client(db_session):
-    from catalogue.main import app, get_db  # Adjust the import path as needed
-    from fastapi.testclient import TestClient
+def redis_session():
+    yield
+    # Clear the test Redis database after each test
+    override_get_redis_client().flushdb()
 
-    def override_get_db():
-        try:
-            yield db_session
-        finally:
-            db_session.close()
 
+# Function-level fixture for TestClient with database and redis session override
+@pytest.fixture(scope="function")
+def client(
+    db_session, redis_session
+):  # Including these fixtures invokes them after the client fixture
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_redis_client] = override_get_redis_client
     with TestClient(app) as c:
         yield c

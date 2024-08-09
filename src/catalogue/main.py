@@ -2,7 +2,7 @@ import json
 from typing import Annotated
 
 import redis
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from starlette import status
@@ -17,7 +17,8 @@ Base.metadata.create_all(bind=engine)
 
 
 # Redis setup
-redis_client = redis.Redis(host="localhost", port=6379, db=0)
+def get_redis_client():
+    return redis.Redis(host="localhost", port=6379, db=0)
 
 
 def get_db():
@@ -56,8 +57,15 @@ async def add_book(db: db_dependency, book_request: BookRequest):
 # Add a book instance to the catalogue
 @app.post("/book_instance", status_code=status.HTTP_201_CREATED)
 async def add_book_instance(
-    db: db_dependency, book_instance_request: BookInstanceRequest
+    db: db_dependency,
+    book_instance_request: BookInstanceRequest,
+    redis_client: redis.Redis = Depends(get_redis_client),
 ):
+    # Check if the book exists
+    book = db.query(Book).filter(Book.isbn == book_instance_request.isbn).first()
+    if not book:
+        raise HTTPException(status_code=400, detail="Book does not exist")
+
     new_book_instance = BookInstance(**book_instance_request.model_dump())
 
     db.add(new_book_instance)
@@ -73,6 +81,6 @@ async def add_book_instance(
         "is_circulating": new_book_instance.is_circulating,
         "added_at": new_book_instance.added_at.isoformat(),
     }
-    redis_client.publish("book_instance_added", json.dumps(event_dict))
+    redis_client.rpush("book_instance_added", json.dumps(event_dict))
 
     return {"message": "Book instance added successfully"}
