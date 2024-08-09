@@ -66,6 +66,21 @@ jobs:
         poetry config virtualenvs.create false
         poetry install --with dev,test --all-extras
 
+        - name: Wait for PostgreSQL to be ready
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432; then
+              break
+            fi
+            echo "Waiting for PostgreSQL..."
+            sleep 1
+          done
+  
+    - name: Set up database
+      run: |
+        chmod +x ./tests/create_db.sh
+        ./tests/create_db.sh
+
     - name: Run Ruff
       run: ruff check --output-format=github .
 
