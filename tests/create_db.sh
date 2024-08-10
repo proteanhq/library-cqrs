@@ -19,13 +19,13 @@ EOF
 
 # SQL commands to create the database
 SQL_CREATE_DB=$(cat <<EOF
-CREATE DATABASE $DB_NAME;
-GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+CREATE DATABASE $DB_NAME WITH OWNER $DB_USER;
 EOF
 )
 
 # SQL commands to grant schema-level privileges
 SQL_GRANT_PRIVILEGES=$(cat <<EOF
+GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 GRANT ALL PRIVILEGES ON SCHEMA public TO $DB_USER;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
@@ -34,10 +34,10 @@ EOF
 )
 
 # Execute the SQL command to create the user
-PGPASSWORD="$DB_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN" -d postgres -c "$SQL_CREATE_USER"
+PGPASSWORD="$DB_ADMIN_PASSWORD" psql -v ON_ERROR_STOP=1 -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN" -d postgres -c "$SQL_CREATE_USER"
 
-# Execute the SQL command to create the database (this must be done separately to avoid transaction block errors)
-PGPASSWORD="$DB_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN" -d postgres -c "$SQL_CREATE_DB"
+# Execute the SQL command to create the database separately
+PGPASSWORD="$DB_ADMIN_PASSWORD" psql -v ON_ERROR_STOP=1 -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN" -d postgres -c "$SQL_CREATE_DB"
 
 # Execute the SQL commands to grant schema-level privileges by connecting to the newly created database
-PGPASSWORD="$DB_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN" -d "$DB_NAME" -c "$SQL_GRANT_PRIVILEGES"
+PGPASSWORD="$DB_ADMIN_PASSWORD" psql -v ON_ERROR_STOP=1 -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN" -d "$DB_NAME" -c "$SQL_GRANT_PRIVILEGES"
