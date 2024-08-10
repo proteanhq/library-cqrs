@@ -11,9 +11,14 @@ DB_NAME="test_postgres"
 DB_USER="test_postgres"
 DB_USER_PASSWORD="test_postgres"
 
-# SQL commands to create the user and database
-SQL_CREATE_DB=$(cat <<EOF
+# SQL commands to create the user
+SQL_CREATE_USER=$(cat <<EOF
 CREATE USER $DB_USER WITH PASSWORD '$DB_USER_PASSWORD';
+EOF
+)
+
+# SQL commands to create the database
+SQL_CREATE_DB=$(cat <<EOF
 CREATE DATABASE $DB_NAME;
 GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 EOF
@@ -28,7 +33,10 @@ GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO $DB_USER;
 EOF
 )
 
-# Execute the SQL commands to create the user and database
+# Execute the SQL command to create the user
+PGPASSWORD="$DB_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN" -d postgres -c "$SQL_CREATE_USER"
+
+# Execute the SQL command to create the database (this must be done separately to avoid transaction block errors)
 PGPASSWORD="$DB_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN" -d postgres -c "$SQL_CREATE_DB"
 
 # Execute the SQL commands to grant schema-level privileges by connecting to the newly created database
