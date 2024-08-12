@@ -18,7 +18,7 @@ Base.metadata.create_all(bind=engine)
 
 # Redis setup
 def get_redis_client():
-    return redis.Redis(host="localhost", port=6379, db=0)
+    return redis.Redis(host="localhost", port=6379, db=2)
 
 
 def get_db():

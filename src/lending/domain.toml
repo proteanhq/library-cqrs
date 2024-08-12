@@ -9,23 +9,24 @@ command_processing = "sync"
 [databases.default]
 provider = "memory"
 
+[dev.databases.default]
+provider = "postgresql"
+database_uri = "postgresql://local_postgres:local_postgres@localhost:5432/local_postgres"
+
 [test.databases.default]
 provider = "postgresql"
 database_uri = "postgresql://test_postgres:test_postgres@localhost:5432/test_postgres"
 
-[production.databases.default]
+[prod.databases.default]
 provider = "postgresql"
 database_uri = "postgresql://postgres:postgres@localhost:5432/postgres"
-
-[databases.memory]
-provider = "memory"
 
 [brokers.default]
 provider = "inline"
 
-[production.brokers.default]
+[dev.brokers.default]
 provider = "redis"
-URI = "redis://127.0.0.1:6379/0"
+URI = "redis://127.0.0.1:6379/2"
 IS_ASYNC = true
 
 [test.brokers.default]
@@ -33,17 +34,26 @@ provider = "redis"
 URI = "redis://127.0.0.1:6379/1"
 IS_ASYNC = false
 
+[prod.brokers.default]
+provider = "redis"
+URI = "redis://127.0.0.1:6379/0"
+IS_ASYNC = true
+
 [caches.default]
 provider = "memory"
 
 [event_store]
 provider = "memory"
 
+[dev.event_store]
+provider = "message_db"
+database_uri = "postgresql://message_store@localhost:5433/message_store"
+
 [test.event_store]
 provider = "message_db"
 database_uri = "postgresql://message_store@localhost:5433/message_store"
 
-[production.event_store]
+[prod.event_store]
 provider = "message_db"
 database_uri = "postgresql://message_store@localhost:5433/message_store"
 

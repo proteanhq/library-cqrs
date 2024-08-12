@@ -32,6 +32,16 @@ Protean example implementation
 
     `pre-commit install`
 
+## Running Development Servers
+
+1. Catalogue domain: 
+
+    FastAPI Server: `fastapi dev src/catalogue/main.py`
+
+1. Lending domain:
+
+    Protean Server: `PROTEAN_ENV=dev protean server --domain lending.domain`
+
 ## Running Tests
 
 - Basic: `make test`
