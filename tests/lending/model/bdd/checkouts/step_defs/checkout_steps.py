@@ -50,7 +50,7 @@ def regular_patron(regular_patron):
 
 @given("the patron has a hold on the book")
 def patron_with_active_hold(patron, book):
-    place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED)()
+    place_hold(g.current_user, book, "1", HoldType.CLOSED_ENDED.value)()
 
 
 @given("a patron has checked out a book")

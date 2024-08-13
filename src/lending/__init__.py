@@ -18,6 +18,7 @@ from lending.model.patron import (
 )
 
 from lending.app.dailysheet import DailySheet  # isort:skip
+from lending.app.patron.hold import PlaceHold  # isort:skip
 
 
 __all__ = [
@@ -33,6 +34,7 @@ __all__ = [
     "BookStatus",
     "BookType",
     "place_hold",
+    "PlaceHold",
     "DailySheetService",
     "checkout",
     "DailySheet",

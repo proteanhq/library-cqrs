@@ -65,7 +65,7 @@ def more_than_two_overdue_checkouts(overdue_checkouts_patron):
 @given("a closed-ended hold is placed")
 def closed_ended_hold_placed():
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED.value)()
     current_domain.repository_for(Patron).add(refreshed_patron)
 
 
@@ -86,7 +86,7 @@ def patron_with_fewer_than_five_holds():
 def patron_with_exactly_five_holds(five_books):
     for i in range(5):
         refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-        place_hold(refreshed_patron, five_books[i], "1", HoldType.CLOSED_ENDED)()
+        place_hold(refreshed_patron, five_books[i], "1", HoldType.CLOSED_ENDED.value)()
         current_domain.repository_for(Patron).add(refreshed_patron)
 
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
@@ -99,7 +99,7 @@ def patron_with_active_hold(patron, book):
     g.current_book = book
 
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-    place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED)()
+    place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED.value)()
     current_domain.repository_for(Patron).add(refreshed_patron)
 
 
@@ -109,7 +109,7 @@ def patron_with_expired_hold(patron, book):
     g.current_book = book
 
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-    place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED)()
+    place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED.value)()
     current_domain.repository_for(Patron).add(refreshed_patron)
 
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
@@ -123,7 +123,7 @@ def patron_with_checked_out_hold(patron, book):
     g.current_book = book
 
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-    place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED)()
+    place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED.value)()
     current_domain.repository_for(Patron).add(refreshed_patron)
 
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
@@ -138,7 +138,7 @@ def patron_with_checked_out_hold(patron, book):
 def place_hold_on_book():
     try:
         refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-        place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+        place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED.value)()
         current_domain.repository_for(Patron).add(refreshed_patron)
     except ValidationError as exc:
         g.current_exception = exc
@@ -149,7 +149,7 @@ def place_hold_on_book():
 def place_open_ended_hold():
     try:
         refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-        place_hold(refreshed_patron, g.current_book, "1", HoldType.OPEN_ENDED)()
+        place_hold(refreshed_patron, g.current_book, "1", HoldType.OPEN_ENDED.value)()
         current_domain.repository_for(Patron).add(refreshed_patron)
     except ValidationError as exc:
         g.current_exception = exc
@@ -159,7 +159,7 @@ def place_open_ended_hold():
 def closed_ended_hold():
     try:
         refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-        place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+        place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED.value)()
         current_domain.repository_for(Patron).add(refreshed_patron)
     except ValidationError as exc:
         g.current_exception = exc
@@ -176,12 +176,12 @@ def check_expiring_holds():
 def place_more_than_five_holds(five_books):
     for i in range(5):
         refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-        place_hold(refreshed_patron, five_books[i], "1", HoldType.CLOSED_ENDED)()
+        place_hold(refreshed_patron, five_books[i], "1", HoldType.CLOSED_ENDED.value)()
         current_domain.repository_for(Patron).add(refreshed_patron)
 
     # Place one more hold
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED.value)()
     current_domain.repository_for(Patron).add(refreshed_patron)
 
 

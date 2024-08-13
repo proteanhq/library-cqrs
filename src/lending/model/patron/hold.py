@@ -78,7 +78,9 @@ class Hold:
         )
 
     def cancel(self):
-        if self.status == HoldStatus.EXPIRED.value or self.expires_on < date.today():
+        if self.status == HoldStatus.EXPIRED.value or (
+            self.expires_on is not None and self.expires_on < date.today()
+        ):
             raise ValidationError({"expired_hold": ["Cannot cancel expired holds"]})
 
         if self.status == HoldStatus.CHECKED_OUT.value:

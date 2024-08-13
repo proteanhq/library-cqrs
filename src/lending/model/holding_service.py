@@ -19,7 +19,7 @@ from lending.model.patron import (
 @lending.domain_service(part_of=[Patron, Book])
 class place_hold:
     def __init__(
-        self, patron: Patron, book: Book, branch_id: Identifier, hold_type: HoldType
+        self, patron: Patron, book: Book, branch_id: Identifier, hold_type: str
     ):
         self.patron = patron
         self.book = book
@@ -49,7 +49,7 @@ class place_hold:
     def regular_patrons_cannot_place_open_ended_holds(self):
         if (
             self.patron.patron_type == PatronType.REGULAR.value
-            and self.hold_type == HoldType.OPEN_ENDED
+            and self.hold_type == HoldType.OPEN_ENDED.value
         ):
             raise ValidationError(
                 {"hold_type": ["Regular patrons cannot place open-ended holds"]}
@@ -97,7 +97,7 @@ class place_hold:
         hold = Hold(
             book_id=self.book.id,
             branch_id=self.branch_id,
-            hold_type=self.hold_type.value,
+            hold_type=self.hold_type,
             status=HoldStatus.ACTIVE.value,
             requested_at=datetime.now(),
             expires_on=expires_on,

@@ -54,7 +54,7 @@ def patron_with_active_hold(patron, book):
 
     with UnitOfWork():
         refreshed_patron = current_domain.repository_for(Patron).get(patron.id)
-        place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED)()
+        place_hold(refreshed_patron, book, "1", HoldType.CLOSED_ENDED.value)()
         current_domain.repository_for(Patron).add(refreshed_patron)
 
 
@@ -95,7 +95,7 @@ def generated_daily_sheet_for_expiring_holds(patron, book):
 
     # Place Hold
     refreshed_patron = current_domain.repository_for(Patron).get(patron.id)
-    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED.value)()
     current_domain.repository_for(Patron).add(refreshed_patron)
 
     # Expire Hold
@@ -152,7 +152,7 @@ def generated_daily_sheet_for_overdue_checkouts(patron, book):
 def place_hold_on_book():
     try:
         refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-        place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+        place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED.value)()
         current_domain.repository_for(Patron).add(refreshed_patron)
     except ValidationError as exc:
         g.current_exception = exc
@@ -214,7 +214,7 @@ def generate_daily_sheet(patron, book):
 
     # Place Hold
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
-    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED)()
+    place_hold(refreshed_patron, g.current_book, "1", HoldType.CLOSED_ENDED.value)()
     current_domain.repository_for(Patron).add(refreshed_patron)
 
     # Expire Hold
