@@ -13,6 +13,12 @@ class PlaceHold:
     hold_type = String(required=True)
 
 
+@lending.command(part_of="Patron")
+class CancelHold:
+    patron_id = Identifier(required=True)
+    hold_id = Identifier(required=True)
+
+
 @lending.command_handler(part_of="Patron")
 class HoldCommandHandler:
     @handle(PlaceHold)
@@ -21,4 +27,10 @@ class HoldCommandHandler:
         book = current_domain.repository_for(Book).get(command.book_id)
 
         place_hold(patron, book, command.branch_id, command.hold_type)()
+        current_domain.repository_for(Patron).add(patron)
+
+    @handle(CancelHold)
+    def handle_cancel_hold(self, command: CancelHold) -> None:
+        patron = current_domain.repository_for(Patron).get(command.patron_id)
+        patron.cancel_hold(command.hold_id)
         current_domain.repository_for(Patron).add(patron)

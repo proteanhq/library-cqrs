@@ -1,9 +1,20 @@
+from datetime import date, timedelta
+
 import pytest
 from protean import current_domain, g
 from protean.exceptions import ValidationError
 from pytest_bdd import given, then, when
 
-from lending import Book, BookStatus, HoldType, PlaceHold
+from lending import (
+    Book,
+    BookStatus,
+    CancelHold,
+    CheckoutBook,
+    HoldStatus,
+    HoldType,
+    Patron,
+    PlaceHold,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -52,6 +63,59 @@ def a_book_is_already_on_hold_by_another_patron(book):
     g.current_book = book
 
 
+@given("a patron has an active hold")
+def patron_with_active_hold(patron, book):
+    g.current_user = patron
+    g.current_book = book
+
+    command = PlaceHold(
+        patron_id=g.current_user.id,
+        book_id=g.current_book.id,
+        branch_id="1",
+        hold_type=HoldType.CLOSED_ENDED.value,
+    )
+    current_domain.process(command)
+
+
+@given("a patron has an expired hold")
+def patron_with_expired_hold(patron, book):
+    g.current_user = patron
+    g.current_book = book
+
+    command = PlaceHold(
+        patron_id=g.current_user.id,
+        book_id=g.current_book.id,
+        branch_id="1",
+        hold_type=HoldType.CLOSED_ENDED.value,
+    )
+    current_domain.process(command)
+
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    refreshed_patron.holds[0].expires_on = date.today() - timedelta(days=1)
+    current_domain.repository_for(Patron).add(refreshed_patron)
+
+
+@given("a patron has a hold that has been checked out")
+def patron_with_hold_that_has_been_checked_out(patron, book):
+    g.current_user = patron
+    g.current_book = book
+
+    command = PlaceHold(
+        patron_id=g.current_user.id,
+        book_id=g.current_book.id,
+        branch_id="1",
+        hold_type=HoldType.CLOSED_ENDED.value,
+    )
+    current_domain.process(command)
+
+    command = CheckoutBook(
+        patron_id=g.current_user.id,
+        book_id=g.current_book.id,
+        branch_id="1",
+    )
+    current_domain.process(command)
+
+
 @when("the patron places a hold on the book")
 @when("the patron tries to place a hold on the book")
 @when("the patron tries to place a hold on a book")
@@ -63,6 +127,21 @@ def the_patron_places_a_hold_on_the_book():
             branch_id="1",
             hold_type=HoldType.CLOSED_ENDED.value,
         )
+        current_domain.process(command)
+    except ValidationError as exc:
+        g.current_exception = exc
+
+
+@when("the patron cancels the hold")
+@when("the patron tries to cancel the hold")
+def cancel_hold():
+    try:
+        refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+        command = CancelHold(
+            patron_id=refreshed_patron.id,
+            hold_id=refreshed_patron.holds[0].id,
+        )
+
         current_domain.process(command)
     except ValidationError as exc:
         g.current_exception = exc
@@ -83,7 +162,8 @@ def the_book_is_marked_as_held():
 
 
 @then("the hold placement is rejected")
-def the_hold_placement_is_rejected():
+@then("the cancellation is rejected")
+def action_is_rejected():
     assert hasattr(g, "current_exception")
     assert isinstance(g.current_exception, ValidationError)
 
@@ -92,3 +172,9 @@ def the_hold_placement_is_rejected():
 def the_book_is_not_marked_as_held():
     book = current_domain.repository_for(Book).get(g.current_book.id)
     assert book.status != BookStatus.ON_HOLD.value
+
+
+@then("the hold is successfully canceled")
+def check_hold_canceled():
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert refreshed_patron.holds[0].status == HoldStatus.CANCELLED.value
