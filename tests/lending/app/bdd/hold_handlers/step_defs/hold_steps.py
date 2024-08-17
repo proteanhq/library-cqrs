@@ -116,9 +116,53 @@ def patron_with_hold_that_has_been_checked_out(patron, book):
     current_domain.process(command)
 
 
+@given("patron has fewer than five holds")
+def patron_has_fewer_than_five_holds():
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert len(refreshed_patron.holds) < 5
+
+
+@given("patron has exactly five holds")
+def patron_has_exactly_five_holds(five_books):
+    for i in range(5):
+        refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+        command = PlaceHold(
+            patron_id=refreshed_patron.id,
+            book_id=five_books[i].id,
+            branch_id="1",
+            hold_type=HoldType.CLOSED_ENDED.value,
+        )
+        current_domain.process(command)
+
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert len(refreshed_patron.holds) == 5
+
+
+@when("the patron places more than five holds")
+def patron_places_more_than_five_holds(five_books):
+    for i in range(5):
+        command = PlaceHold(
+            patron_id=g.current_user.id,
+            book_id=five_books[i].id,
+            branch_id="1",
+            hold_type=HoldType.CLOSED_ENDED.value,
+        )
+        current_domain.process(command)
+
+    # Place one more hold
+    command = PlaceHold(
+        patron_id=g.current_user.id,
+        book_id=g.current_book.id,
+        branch_id="1",
+        hold_type=HoldType.CLOSED_ENDED.value,
+    )
+    current_domain.process(command)
+
+
 @when("the patron places a hold on the book")
 @when("the patron tries to place a hold on the book")
 @when("the patron tries to place a hold on a book")
+@when("the patron tries to place an additional hold")
 def the_patron_places_a_hold_on_the_book():
     try:
         command = PlaceHold(
@@ -178,3 +222,16 @@ def the_book_is_not_marked_as_held():
 def check_hold_canceled():
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
     assert refreshed_patron.holds[0].status == HoldStatus.CANCELLED.value
+
+
+@then("all holds are successfully placed")
+def holds_placed(five_books):
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+
+    assert len(refreshed_patron.holds) == 6
+    assert refreshed_patron.holds[0].book_id == five_books[0].id
+    assert refreshed_patron.holds[5].book_id == g.current_book.id
+
+    if hasattr(g, "current_exception"):
+        print(g.current_exception.messages)
+    assert hasattr(g, "current_exception") is False
