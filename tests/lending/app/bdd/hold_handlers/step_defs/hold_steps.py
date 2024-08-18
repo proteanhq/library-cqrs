@@ -10,6 +10,7 @@ from lending import (
     BookStatus,
     CancelHold,
     CheckoutBook,
+    DailySheetService,
     HoldStatus,
     HoldType,
     Patron,
@@ -64,6 +65,7 @@ def a_book_is_already_on_hold_by_another_patron(book):
 
 
 @given("a patron has an active hold")
+@given("a closed-ended hold is placed")
 def patron_with_active_hold(patron, book):
     g.current_user = patron
     g.current_book = book
@@ -90,6 +92,13 @@ def patron_with_expired_hold(patron, book):
     )
     current_domain.process(command)
 
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    refreshed_patron.holds[0].expires_on = date.today() - timedelta(days=1)
+    current_domain.repository_for(Patron).add(refreshed_patron)
+
+
+@given("the hold has reached its expiry date")
+def hold_has_reached_expiry_date():
     refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
     refreshed_patron.holds[0].expires_on = date.today() - timedelta(days=1)
     current_domain.repository_for(Patron).add(refreshed_patron)
@@ -191,6 +200,42 @@ def cancel_hold():
         g.current_exception = exc
 
 
+@when("the patron places an open-ended hold")
+@when("the patron tries to place an open-ended hold")
+def patron_places_open_ended_hold():
+    try:
+        command = PlaceHold(
+            patron_id=g.current_user.id,
+            book_id=g.current_book.id,
+            branch_id="1",
+            hold_type=HoldType.OPEN_ENDED.value,
+        )
+        current_domain.process(command)
+    except ValidationError as exc:
+        g.current_exception = exc
+
+
+@when("the patron places a closed-ended hold")
+def patron_places_closed_ended_hold():
+    try:
+        command = PlaceHold(
+            patron_id=g.current_user.id,
+            book_id=g.current_book.id,
+            branch_id="1",
+            hold_type=HoldType.CLOSED_ENDED.value,
+        )
+        current_domain.process(command)
+    except ValidationError as exc:
+        g.current_exception = exc
+
+
+@when("the system checks for expiring holds")
+def check_expiring_holds():
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    DailySheetService(patrons=[refreshed_patron]).run()
+    current_domain.repository_for(Patron).add(refreshed_patron)
+
+
 @then("the hold is successfully placed")
 def the_hold_is_successfully_placed():
     message = current_domain.event_store.store.read_last_message(
@@ -235,3 +280,15 @@ def holds_placed(five_books):
     if hasattr(g, "current_exception"):
         print(g.current_exception.messages)
     assert hasattr(g, "current_exception") is False
+
+
+@then("the hold does not have an expiry date")
+def hold_does_not_have_expiry_date():
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert refreshed_patron.holds[0].expires_on is None
+
+
+@then("the hold status is updated to expired")
+def hold_status_updated_to_expired():
+    refreshed_patron = current_domain.repository_for(Patron).get(g.current_user.id)
+    assert refreshed_patron.holds[0].status == HoldStatus.EXPIRED.value
