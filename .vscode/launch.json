@@ -11,7 +11,7 @@
             "module": "pytest",
             "justMyCode": false,
             "args": [
-                "tests/lending/model/bdd/holds/test_holds.py::test_regular_patron_tries_to_place_an_openended_hold",
+                "tests/lending/app/bdd/checkout_handlers/test_checkouts.py::test_patron_returns_a_book_after_the_due_date",
             ]
         },
     ]

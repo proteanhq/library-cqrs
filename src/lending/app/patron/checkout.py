@@ -12,6 +12,12 @@ class CheckoutBook:
     branch_id = Identifier(required=True)
 
 
+@lending.command(part_of="Patron")
+class ReturnBook:
+    patron_id = Identifier(required=True, identifier=True)
+    book_id = Identifier(required=True)
+
+
 @lending.command_handler(part_of="Patron")
 class CheckoutCommandHandler:
     @handle(CheckoutBook)
@@ -20,4 +26,11 @@ class CheckoutCommandHandler:
         book = current_domain.repository_for(Book).get(command.book_id)
 
         checkout(patron, book, command.branch_id)()
+        current_domain.repository_for(Patron).add(patron)
+
+    @handle(ReturnBook)
+    def handle_return_book(self, command: ReturnBook) -> None:
+        patron = current_domain.repository_for(Patron).get(command.patron_id)
+
+        patron.return_book(command.book_id)
         current_domain.repository_for(Patron).add(patron)

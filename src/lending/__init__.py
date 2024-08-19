@@ -19,7 +19,7 @@ from lending.model.patron import (
 
 from lending.app.dailysheet import DailySheet  # isort:skip
 from lending.app.patron.hold import CancelHold, PlaceHold  # isort:skip
-from lending.app.patron.checkout import CheckoutBook  # isort:skip
+from lending.app.patron.checkout import CheckoutBook, ReturnBook  # isort:skip
 
 
 __all__ = [
@@ -31,6 +31,7 @@ __all__ = [
     "HoldPlaced",
     "Checkout",
     "CheckoutBook",
+    "ReturnBook",
     "CheckoutStatus",
     "Book",
     "BookStatus",
