@@ -20,7 +20,7 @@ def setup_db():
                     if entity_record.cls.meta_.provider == provider.name:
                         lending.repository_for(entity_record.cls)._dao
 
-                for _, entity_record in lending.registry.views.items():
+                for _, entity_record in lending.registry.projections.items():
                     if entity_record.cls.meta_.provider == provider.name:
                         lending.repository_for(entity_record.cls)._dao
 

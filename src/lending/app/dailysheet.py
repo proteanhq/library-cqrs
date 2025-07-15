@@ -17,7 +17,7 @@ from lending.model.patron import (
 )
 
 
-@lending.view
+@lending.projection
 class DailySheet:
     id = Auto(identifier=True)
     patron_id = Identifier(required=True)
@@ -104,7 +104,7 @@ class DailySheetRepository:
         )
 
 
-@lending.event_handler(stream_category="library::patron")
+@lending.projector(projector_for=DailySheet, stream_categories=["library::patron"])
 class DailySheetManager:
     @handle(HoldExpired)
     def handle_hold_expired(self, event: HoldExpired):

@@ -52,7 +52,7 @@ class PatronHoldEventsHandler:
         repo.add(book)
 
 
-@lending.subscriber(channel="book_instance_added")
+@lending.subscriber(stream="book_instance_added")
 class AddBookToLibrary:
     def __call__(self, message: dict):
         with UnitOfWork():
